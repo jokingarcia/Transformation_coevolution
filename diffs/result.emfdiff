@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="Cp1252"?>
+<diff:ModelInputSnapshot xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:diff="http://www.eclipse.org/emf/compare/diff/1.1" xmlns:match="http://www.eclipse.org/emf/compare/match/1.1" date="2010-04-14T10:24:48.328+0200">
+  <diff left="platform:/resource/examination-assistant/metamodels/ExamXML.ecore" right="platform:/resource/examination-assistant/metamodels/ExamXMLEvol.ecore">
+    <ownedElements xsi:type="diff:DiffGroup">
+      <subDiffElements xsi:type="diff:DiffGroup">
+        <subDiffElements xsi:type="diff:DiffGroup">
+          <subDiffElements xsi:type="diff:UpdateAttribute">
+            <attribute href="http://www.eclipse.org/emf/2002/Ecore#//ENamedElement/name"/>
+            <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXML.ecore#//MultipleChoiceElement"/>
+            <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol.ecore#//MCElement"/>
+          </subDiffElements>
+          <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXML.ecore#//MultipleChoiceElement"/>
+        </subDiffElements>
+        <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXML.ecore#/"/>
+      </subDiffElements>
+    </ownedElements>
+  </diff>
+  <match leftModel="platform:/resource/examination-assistant/metamodels/ExamXML.ecore" rightModel="platform:/resource/examination-assistant/metamodels/ExamXMLEvol.ecore">
+    <matchedElements xsi:type="match:Match2Elements" similarity="0.9807692307692306">
+      <subMatchElements xsi:type="match:Match2Elements" similarity="1.0">
+        <subMatchElements xsi:type="match:Match2Elements" similarity="1.0">
+          <subMatchElements xsi:type="match:Match2Elements" similarity="1.0">
+            <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXML.ecore#//Exam/elements/@eGenericType"/>
+            <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol.ecore#//Exam/elements/@eGenericType"/>
+          </subMatchElements>
+          <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXML.ecore#//Exam/elements"/>
+          <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol.ecore#//Exam/elements"/>
+        </subMatchElements>
+        <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXML.ecore#//Exam"/>
+        <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol.ecore#//Exam"/>
+      </subMatchElements>
+      <subMatchElements xsi:type="match:Match2Elements" similarity="1.0">
+        <subMatchElements xsi:type="match:Match2Elements" similarity="1.0">
+          <subMatchElements xsi:type="match:Match2Elements" similarity="1.0">
+            <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXML.ecore#//ExamElement/question/@eGenericType"/>
+            <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol.ecore#//ExamElement/question/@eGenericType"/>
+          </subMatchElements>
+          <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXML.ecore#//ExamElement/question"/>
+          <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol.ecore#//ExamElement/question"/>
+        </subMatchElements>
+        <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXML.ecore#//ExamElement"/>
+        <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol.ecore#//ExamElement"/>
+      </subMatchElements>
+      <subMatchElements xsi:type="match:Match2Elements" similarity="1.0">
+        <subMatchElements xsi:type="match:Match2Elements" similarity="1.0">
+          <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXML.ecore#//OpenElement/@eGenericSuperTypes.0"/>
+          <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol.ecore#//OpenElement/@eGenericSuperTypes.0"/>
+        </subMatchElements>
+        <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXML.ecore#//OpenElement"/>
+        <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol.ecore#//OpenElement"/>
+      </subMatchElements>
+      <subMatchElements xsi:type="match:Match2Elements" similarity="0.7142857142857143">
+        <subMatchElements xsi:type="match:Match2Elements" similarity="0.8760000000000001">
+          <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXML.ecore#//MultipleChoiceElement/@eGenericSuperTypes.0"/>
+          <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol.ecore#//MCElement/@eGenericSuperTypes.0"/>
+        </subMatchElements>
+        <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXML.ecore#//MultipleChoiceElement"/>
+        <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol.ecore#//MCElement"/>
+      </subMatchElements>
+      <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXML.ecore#/"/>
+      <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol.ecore#/"/>
+    </matchedElements>
+  </match>
+</diff:ModelInputSnapshot>

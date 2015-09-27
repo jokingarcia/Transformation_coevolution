@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<diff:DiffModel xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:diff="http://www.eclipse.org/emf/compare/diff/1.1" left="platform:/resource/examination-assistant/metamodels/ExamXMLEvol11.ecore"
+    right="platform:/resource/examination-assistant/metamodels/ExamXMLEvol18.ecore">
+  <complexChanges changeType="Inline_metaclass">
+    <atomicChanges xsi:type="diff:AddModelElement">
+      <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol11.ecore#/"/>
+      <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol18.ecore#//NewOpenElement"/>
+    </atomicChanges>
+    <atomicChanges xsi:type="diff:RemoveModelElement">
+      <rightParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol18.ecore#/"/>
+      <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol11.ecore#//OpenElement"/>
+    </atomicChanges>
+    <atomicChanges xsi:type="diff:MoveMetaproperty" metaproperty="OEAttribute" targetClass="NewOpenElement"
+        sourceClass="OpenElement"/>
+  </complexChanges>
+</diff:DiffModel>

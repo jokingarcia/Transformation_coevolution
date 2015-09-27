@@ -1,0 +1,64 @@
+module exam2mvc; -- Module Template
+create OUT : AssistantMVC from IN : ExamXML;
+
+rule Exams {
+  from 
+  	xml : ExamXML!Exam
+  to
+  	mvc : AssistantMVC!Exam (
+    examItems <- xml.elements
+
+     )
+ 
+} 
+
+rule OpenQuestion {
+    from
+		xml : ExamXML!OpenElement
+    to  
+		controller : AssistantMVC!OpenController(),
+		view : AssistantMVC!OpenView(
+		controller <- controller,
+		fontName <- 'Times',
+		--fontColor <- 'Red'
+		fontColor <- xml.OEAttribute
+		
+	),
+		model : AssistantMVC!Open (
+        question <- xml.question,
+	    observers <- view
+    )
+}
+  
+rule MultipleChoice {
+    from
+		xml : ExamXML!MultipleChoiceElement
+		(
+		if xml.optional then
+			if xml.long then
+				if xml.optional then
+					true
+				else
+					false
+				endif
+			else
+				false
+			endif
+		else
+			false
+		endif
+		
+		
+		)
+    to  
+		controller : AssistantMVC!MultipleChoiceController(),
+		view : AssistantMVC!MultipleChoiceView(
+		controller <- controller,
+		fontName <- 'Times',
+		fontColor <- 'Red'	
+	),
+		model : AssistantMVC!MultipleChoice (
+        question <- xml.question,
+		observers <- view
+    )		
+}

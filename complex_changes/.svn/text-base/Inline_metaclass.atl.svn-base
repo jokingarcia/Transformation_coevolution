@@ -1,0 +1,606 @@
+--For each pattern of atomic changes corresponding to metamodel changes create a ComplexChange.
+--in: result33.emfdiff, diff.ecore
+--Also ExamXMLEvol11 as input
+--out: result33Extended, diffExtended
+module Inline_metaclass; -- Module Template
+create result33Extended : diffExtended from result33 : DIFF, Exam : Ecore, Exam2 : Ecore2;
+
+--returns the lenght of "Assistant"
+helper def : MMSize : Integer =11;
+helper def : EcoreSize : Integer =7;
+--"resultxx"
+helper def : resultSize : Integer =10;
+helper def : indexInlineMetaclass : Integer = 1;
+
+--(add class)
+helper def : getAddModelElement : Sequence(String) =
+	DIFF!AddModelElement.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->collect(e|e.rightElement.toString().split('!')->last());
+--(delete class)
+helper def : getRemoveModelElementLeft : Sequence(String) =
+	DIFF!RemoveModelElement.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->collect(e|e.leftElement.toString().split('!')->last());
+
+--param: OpenElement
+--returns only "direct" sons, not from parents: Sequence{'OEAttribute'}
+helper def : getAttributesFromClass (param : String) : Sequence(String) =
+	Ecore!EClassifier.allInstances()->select(e|e.name=param)
+	->collect(e|e.eStructuralFeatures)->first()->collect(e|e.toString().split('!')->last());
+
+--param: NewOpenElement
+--returns only "direct" sons, not from parents: Sequence{'OEAttribute'}
+helper def : getAttributesFromClass2 (param : String) : Sequence(String) =
+	Ecore2!EClassifier.allInstances()->select(e|e.name=param)
+	->collect(e|e.eStructuralFeatures)->first()->collect(e|e.toString().split('!')->last());
+
+--returns if the params are equal
+helper def : equalSequences (param : Sequence(String), param2 : Sequence(String)): Boolean =
+	param->asSet().symetricDifference(param2->asSet()).size()=0;
+
+--returns the attributes from the classes that matches with new classe´s
+--returns Sequence{'OEAttribute'}
+--param: NewOpenElement
+helper def : getClassAttributes (param : String) : Sequence(String) =
+	let attributes : Sequence(String) =
+		self.getAttributesFromClass(param) in
+	attributes->iterate(p; y : Sequence(String) = Sequence{} |
+		if (self.isDeletedinClass(p))
+		then
+			y.append(p)
+		else
+			y.append('')
+		endif
+	);
+
+--return the added class
+--its attributes are the same as in the deleted class
+helper def : AMEImplied : Sequence(DIFF!AddModelElement) =
+	DIFF!AddModelElement.allInstances()
+	->select(e|e.rightElement.toString().split('!')->last()=self.getAddModelElement->first())
+	->select(e|self.equalSequences(self.getAttributesFromClass2(e.rightElement.toString().split('!')->last()),
+		self.getAttributesFromClass(self.getRemoveModelElementLeft->first())))->asSequence();	
+
+--param: NewOpenElement	
+--attributes of the deleted class are those added in the new class
+helper def : RMEImplied : Sequence(DIFF!RemoveModelElement) =
+	DIFF!RemoveModelElement.allInstances()
+	->select(e|self.equalSequences(self.getAttributesFromClass(e.leftElement.toString().split('!')->last()),
+		self.getAttributesFromClass2(self.AMEImplied->first().rightElement.toString().split('!')->last())))->asSequence();	
+
+--returns the DiffElements implied in ExtractSuperclass
+helper def : diffElements : Sequence(DIFF!DiffElement) =
+	self.AMEImplied.union(self.RMEImplied);
+
+--"Inline superclass" case
+--When a class is removed, check that its attributes are those added to another class
+rule InlineMetaclass {
+	from
+		s : DIFF!DiffModel
+
+	to
+		t : diffExtended!DiffModel (
+			left <- s.left,
+			origin <- s.origin,
+			right <- s.right,
+			ownedElements <- s.ownedElements,
+			complexChanges <- Sequence{c}
+			
+		),
+		
+		c : diffExtended!ComplexChange (
+			impact <- #non_breaking,
+			changeType <- #Inline_metaclass,
+			atomicChanges <- self.diffElements
+					
+			
+		)
+		do {
+			self.indexInlineMetaclass = 1;
+			for (it in self.getAttributesFromClass2(self.AMEImplied->first().rightElement.toString().split('!')->last())){
+				c.atomicChanges<-c.atomicChanges->append(thisModule.AddMoveMetaproperty(c.atomicChanges));
+				self.indexInlineMetaclass = self.indexInlineMetaclass + 1;
+			}
+			self.getAttributesFromClass('OpenElement')->toString().println();
+			self.getAttributesFromClass2('NewOpenElement')->toString().println();
+			self.equalSequences(self.getAttributesFromClass('OpenElement'),self.getAttributesFromClass2('NewOpenElement'))->toString().println();
+			self.AMEImplied->toString().println();
+			self.RMEImplied->toString().println();
+		}
+		
+}
+
+lazy rule AddMoveMetaproperty {
+	from
+		s : diffExtended!MoveMetaproperty
+	
+	to
+		de : diffExtended!MoveMetaproperty (
+			metaproperty <- self.getAttributesFromClass2(self.AMEImplied->first().rightElement.toString().split('!')->last()).at(self.indexInlineMetaclass),
+			targetClass <- self.AMEImplied->first().rightElement.toString().split('!')->last(),
+			sourceClass <- self.RMEImplied->first().leftElement.toString().split('!')->last()
+		)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+rule GenericDiffElement {
+	from
+		s:DIFF!GenericDiffElement(s.oclIsTypeOf(DIFF!GenericDiffElement))
+	to
+		t:diffExtended!DiffModel(
+			leftElement <- s.leftElement,
+			rightElement <- s.rightElement,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+		
+		)
+}
+
+rule ConflictingDiffElement {
+	from
+		s:DIFF!ConflictingDiffElement(s.oclIsTypeOf(DIFF!ConflictingDiffElement))
+	to
+		t:diffExtended!ConflictingDiffElement(
+			leftParent <- s.leftParent,
+			rightParent <- s.rightParent,
+			originElement <- s.originElement,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+		
+		)
+}
+
+
+rule ModelInputSnapshot {
+	from
+		s:DIFF!ModelInputSnapshot(s.oclIsTypeOf(DIFF!DiffGroup))
+	to
+		t:diffExtended!ModelInputSnapshot(
+			date <- s.date,
+			diff <- s.diff,
+			match <- s.match
+		)
+}
+
+rule ModelElementChange {
+	from
+		s:DIFF!ModelElementChange(s.oclIsTypeOf(DIFF!ModelElementChange))
+	to
+		t:diffExtended!ModelElementChange(
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+rule ModelElementChangeLeftTarget {
+	from
+		s:DIFF!ModelElementChangeLeftTarget(s.oclIsTypeOf(DIFF!ModelElementChangeLeftTarget))
+	to
+		t:diffExtended!ModelElementChangeLeftTarget(
+			rightParent <- s.rightParent,
+			leftElement <- s.leftElement,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+rule ModelElementChangeRightTarget {
+	from
+		s:DIFF!ModelElementChangeRightTarget(s.oclIsTypeOf(DIFF!ModelElementChangeRightTarget))
+	to
+		t:diffExtended!ModelElementChangeRightTarget(
+			leftParent <- s.leftParent,
+			rightElement <- s.rightElement,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule AddModelElement {
+	from
+		s:DIFF!AddModelElement(s.oclIsTypeOf(DIFF!AddModelElement))
+	to
+		t:diffExtended!AddModelElement(
+			leftParent <- s.leftParent,
+			rightElement <- s.rightElement,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule RemoteAddModelElement {
+	from
+		s:DIFF!RemoteAddModelElement(s.oclIsTypeOf(DIFF!RemoteAddModelElement))
+	to
+		t:diffExtended!RemoteAddModelElement(
+			rightParent <- s.rightParent,
+			leftElement <- s.leftElement,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+		
+		)
+}
+
+rule RemoveModelElement {
+	from
+		s:DIFF!RemoveModelElement(s.oclIsTypeOf(DIFF!RemoveModelElement))
+	to
+		t:diffExtended!RemoveModelElement(
+			rightParent <- s.rightParent,
+			leftElement <- s.leftElement,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+		
+		)
+}
+
+rule RemoteRemoveModelElement {
+	from
+		s:DIFF!RemoteRemoveModelElement(s.oclIsTypeOf(DIFF!RemoteRemoveModelElement))
+	to
+		t:diffExtended!RemoteRemoveModelElement(
+			leftParent <- s.leftParent,
+			rightElement <- s.rightElement,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+		
+		)
+}
+
+
+
+rule MoveModelElement {
+	from
+		s:DIFF!MoveModelElement
+	to
+		t:diffExtended!MoveModelElement(
+			leftTarget <- s.leftTarget,
+			rightTarget <- s.rightTarget,
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule UpdateModelElement {
+	from
+		s:DIFF!UpdateModelElement(s.oclIsTypeOf(DIFF!UpdateModelElement))
+	to
+		t:diffExtended!UpdateModelElement(
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+
+
+rule RemoteMoveModelElement {
+	from
+		s:DIFF!RemoteMoveModelElement(s.oclIsTypeOf(DIFF!RemoteMoveModelElement))
+	to
+		t:diffExtended!RemoteMoveModelElement(
+			leftTarget <- s.leftTarget,
+			rightTarget <- s.rightTarget,
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule AttributeChange {
+	from
+		s:DIFF!AttributeChange(s.oclIsTypeOf(DIFF!AttributeChange))
+	to
+		t:diffExtended!AttributeChange(
+			leftElement <- s.leftElement,
+			rightElement <- s.rightElement,
+			attribute <- s.attribute,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule AttributeChangeLeftTarget {
+	from
+		s:DIFF!AttributeChangeLeftTarget(s.oclIsTypeOf(DIFF!AttributeChangeLeftTarget))
+	to
+		t:diffExtended!AttributeChangeLeftTarget(
+			leftTarget <- s.leftTarget,
+			leftElement <- s.leftElement,
+			rightElement <- s.rightElement,
+			attribute <- s.attribute,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule AttributeChangeRightTarget {
+	from
+		s:DIFF!AttributeChangeRightTarget(s.oclIsTypeOf(DIFF!AttributeChangeRightTarget))
+	to
+		t:diffExtended!AttributeChangeRightTarget(
+			rightTarget <- s.rightTarget,
+			leftElement <- s.leftElement,
+			rightElement <- s.rightElement,
+			attribute <- s.attribute,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+		
+		)
+}
+
+rule AddAttribute {
+	from
+		s:DIFF!AddAttribute(s.oclIsTypeOf(DIFF!AddAttribute))
+	to
+		t:diffExtended!AddAttribute(
+			rightTarget <- s.rightTarget,
+			leftElement <- s.leftElement,
+			rightElement <- s.rightElement,
+			attribute <- s.attribute,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule RemoteAddAttribute {
+	from
+		s:DIFF!RemoteAddAttribute(s.oclIsTypeOf(DIFF!RemoteAddAttribute))
+	to
+		t:diffExtended!RemoteAddAttribute(
+			leftTarget <- s.leftTarget,
+			leftElement <- s.leftElement,
+			rightElement <- s.rightElement,
+			attribute <- s.attribute,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule RemoveAttribute {
+	from
+		s:DIFF!RemoveAttribute(s.oclIsTypeOf(DIFF!RemoveAttribute))
+	to
+		t:diffExtended!RemoveAttribute(
+			leftTarget <- s.leftTarget,
+			leftElement <- s.leftElement,
+			rightElement <- s.rightElement,
+			attribute <- s.attribute,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule RemoteRemoveAttribute {
+	from
+		s:DIFF!RemoteRemoveAttribute(s.oclIsTypeOf(DIFF!RemoteRemoveAttribute))
+	to
+		t:diffExtended!RemoteRemoveAttribute(
+			rightTarget <- s.rightTarget,
+			leftElement <- s.leftElement,
+			rightElement <- s.rightElement,
+			attribute <- s.attribute,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+		
+		)
+}
+
+rule UpdateAttribute {
+	from
+		s:DIFF!UpdateAttribute(s.oclIsTypeOf(DIFF!UpdateAttribute))
+	to
+		t:diffExtended!UpdateAttribute(
+			leftElement <- s.leftElement,
+			rightElement <- s.rightElement,
+			attribute <- s.attribute,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+		
+		)
+}
+
+rule RemoteUpdateAttribute {
+	from
+		s:DIFF!RemoteUpdateAttribute(s.oclIsTypeOf(DIFF!RemoteUpdateAttribute))
+	to
+		t:diffExtended!RemoteUpdateAttribute(
+			leftElement <- s.leftElement,
+			rightElement <- s.rightElement,
+			attribute <- s.attribute,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+		
+		)
+}
+
+rule ReferenceChange {
+	from
+		s:DIFF!ReferenceChange(s.oclIsTypeOf(DIFF!ReferenceChange))
+	to
+		t:diffExtended!ReferenceChange(
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			leftTarget <- s.leftTarget,
+			reference <- s.reference,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+			
+		)
+}
+
+rule ReferenceChangeLeftTarget {
+	from
+		s:DIFF!ReferenceChangeLeftTarget(s.oclIsTypeOf(DIFF!ReferenceChangeLeftTarget))
+	to
+		t:diffExtended!ReferenceChangeLeftTarget(
+			leftRemovedTarget <- s.leftRemovedTarget,
+			rightRemovedTarget <- s.rightRemovedTarget,
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			leftTarget <- s.leftTarget,
+			reference <- s.reference,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule ReferenceChangeRightTarget {
+	from
+		s:DIFF!ReferenceChangeRightTarget(s.oclIsTypeOf(DIFF!ReferenceChangeRightTarget))
+	to
+		t:diffExtended!ReferenceChangeRightTarget(
+			rightAddedTarget <- s.rightAddedTarget,
+			leftAddedTarget <- s.leftAddedTarget,
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			leftTarget <- s.leftTarget,
+			reference <- s.reference,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule AddReferenceValue {
+	from
+		s:DIFF!AddReferenceValue(s.oclIsTypeOf(DIFF!AddReferenceValue))
+	to
+		t:diffExtended!AddReferenceValue(
+			rightAddedTarget <- s.rightAddedTarget,
+			leftAddedTarget <- s.leftAddedTarget,
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			leftTarget <- s.leftTarget,
+			reference <- s.reference,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule RemoteAddReferenceValue {
+	from
+		s:DIFF!RemoteAddReferenceValue(s.oclIsTypeOf(DIFF!RemoteAddReferenceValue))
+	to
+		t:diffExtended!RemoteAddReferenceValue(
+			leftRemovedTarget <- s.leftRemovedTarget,
+			rightRemovedTarget <- s.rightRemovedTarget,
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			leftTarget <- s.leftTarget,
+			reference <- s.reference,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule RemoveReferenceValue {
+	from
+		s:DIFF!RemoveReferenceValue(s.oclIsTypeOf(DIFF!RemoveReferenceValue))
+	to
+		t:diffExtended!RemoveReferenceValue(
+			leftRemovedTarget <- s.leftRemovedTarget,
+			rightRemovedTarget <- s.rightRemovedTarget,
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			--leftTarget <- s.leftTarget,
+			reference <- s.reference,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule RemoteRemoveReferenceValue {
+	from
+		s:DIFF!RemoteRemoveReferenceValue(s.oclIsTypeOf(DIFF!RemoteRemoveReferenceValue))
+	to
+		t:diffExtended!RemoteRemoveReferenceValue(
+			rightAddedTarget <- s.rightAddedTarget,
+			leftAddedTarget <- s.leftAddedTarget,
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			leftTarget <- s.leftTarget,
+			reference <- s.reference,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule UpdateReference {
+	from
+		s:DIFF!UpdateReference(s.oclIsTypeOf(DIFF!UpdateReference))
+	to
+		t:diffExtended!UpdateReference(
+		rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			leftTarget <- s.leftTarget,
+			reference <- s.reference,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule UpdateUniqueReferenceValue {
+	from
+		s:DIFF!UpdateUniqueReferenceValue(s.oclIsTypeOf(DIFF!UpdateUniqueReferenceValue))
+	to
+		t:diffExtended!UpdateUniqueReferenceValue(
+			leftTarget <- s.leftTarget,
+			rightTarget <- s.rightTarget,
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			leftTarget <- s.leftTarget,
+			reference <- s.reference,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule RemoteUpdateUniqueReferenceValue {
+	from
+		s:DIFF!RemoteUpdateUniqueReferenceValue(s.oclIsTypeOf(DIFF!RemoteUpdateUniqueReferenceValue))
+	to
+		t:diffExtended!RemoteUpdateUniqueReferenceValue(
+			leftTarget <- s.leftTarget,
+			rightTarget <- s.rightTarget,
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			leftTarget <- s.leftTarget,
+			reference <- s.reference,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}

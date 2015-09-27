@@ -1,0 +1,31 @@
+module exam2mvc;
+create OUT : AssistantMVC from IN : ExamXML;
+
+rule Exams {
+  from
+    xml : ExamXML!Exam
+  to
+    mvc : AssistantMVC!Exam (
+      examItems <- xml.elements
+    )
+}
+
+rule OpenQuestion {
+  from
+    xml : ExamXML!OpenElement
+  to
+    controller : AssistantMVC!OpenController,
+    model : AssistantMVC!Open (
+      question <- xml.question
+    )
+}
+
+rule MultipleChoice {
+  from
+    xml : ExamXML!MultipleChoiceElement
+  to
+    controller : AssistantMVC!MultipleChoiceController,
+    model : AssistantMVC!MultipleChoice (
+      question <- xml.question
+    )
+}

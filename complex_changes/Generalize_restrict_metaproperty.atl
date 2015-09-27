@@ -1,0 +1,172 @@
+--Rule AttributeChange has been commented, because it rose an error
+--If the lowerBound cardinality increases create restrict metaproperty
+--if it decreases, create generalize metaproperty
+--in: result16
+--Also AssistantMVCEvol8 (target) and AssistantMVC9 (source) as input
+--out: result15Extended
+module Generalize_restrict_metaproperty; -- Module Template
+create result15Extended : diffExtended from result16 : DIFF, Assistant : Ecore, Assistant9 : EcoreSource;
+
+--"MOF"
+helper def : MofSize : Integer =
+	5;
+--"Ecore"
+helper def : EcoreSize : Integer =
+	7;
+--Retrieve ModelElementChangeLeftTarget (Class addition)
+helper def : getModelElementChangeLeftTarget : Sequence(String) =
+	DIFF!ModelElementChangeLeftTarget.allInstances()->select(e|not e.oclIsUndefined())->asSequence()->collect(e|e.leftElement.toString());
+
+--Retrieve UpdateAttribute
+helper def : getUpdateAttribute : Sequence(DIFF!DiffElement) =
+	DIFF!UpdateAttribute.allInstances()->select(e|e.attribute.toString().substring(self.MofSize,e.attribute.toString().size())='lowerBound')->asSequence();
+
+--Retrieve UpdateAttribute
+helper def : getAttributes : Sequence(String) =
+	DIFF!UpdateAttribute.allInstances()->select(e|not e.oclIsUndefined())->asSequence()->collect(e|e.attribute.toString());
+
+--Compares the lowerBound of examItems in both MMs to return if it has decreased
+--param: examItems
+helper def : decrease (param : String) : Boolean =
+	self.getReferenceFromTarget(param) < self.getReferenceFromSource(param);
+
+--Retrieve lowerBound value from source MM
+helper def : getReferenceFromSource (param : String) : Integer =
+	EcoreSource!EReference.allInstances()->select(e|e.name=param)->first().lowerBound;
+
+--Retrieve lowerBound value from target MM
+helper def : getReferenceFromTarget (param : String) : Integer =
+	Ecore!EReference.allInstances()->select(e|e.name=param)->first().lowerBound;
+
+--"Generalize metaproperty" case (lowerBound decreases)
+rule GeneralizeMetaproperty {
+	from
+		s : DIFF!DiffModel
+		(
+			if (self.decrease(self.getUpdateAttribute->first().leftElement.toString().substring(self.EcoreSize,self.getUpdateAttribute->first().leftElement.toString().size())))
+			then
+				true
+			else
+				false
+			endif
+		)
+		
+	to
+		t : diffExtended!DiffModel (
+			left <- s.left,
+			origin <- s.origin,
+			right <- s.right,
+			ownedElements <- s.ownedElements,
+			complexChanges <- Sequence{c}
+			
+		),
+		
+		c : diffExtended!ComplexChange (
+			impact <- #non_breaking,
+			changeType <- #Generalize_metaproperty,
+			--atomicChanges son los ownedElements que forman parte de ExtractSuperclass
+			atomicChanges <- self.getUpdateAttribute
+			
+			
+		)
+		do {
+			
+						
+		}
+		
+}
+
+--"Restrict metaproperty" case (lowerBound increases)
+rule RestrictMetaproperty {
+	from
+		s : DIFF!DiffModel
+		(
+			if (not self.decrease(self.getUpdateAttribute->first().leftElement.toString().substring(self.EcoreSize,self.getUpdateAttribute->first().leftElement.toString().size())))
+			then
+				true
+			else
+				false
+			endif
+		)
+		
+	to
+		t : diffExtended!DiffModel (
+			left <- s.left,
+			origin <- s.origin,
+			right <- s.right,
+			ownedElements <- s.ownedElements,
+			complexChanges <- Sequence{c}
+			
+		),
+		
+		c : diffExtended!ComplexChange (
+			impact <- #resolvable,
+			changeType <- #Restrict_metaproperty,
+			--atomicChanges son los ownedElements que forman parte de ExtractSuperclass
+			atomicChanges <- self.getUpdateAttribute
+			
+			
+		)
+		do {
+			
+						
+		}
+		
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--rule AttributeChange {
+--	from
+--		s:DIFF!AttributeChange
+--	to
+--		t:diffExtended!AttributeChange(
+--			leftElement <- s.leftElement,
+--			rightElement <- s.rightElement,
+--			attribute <- s.attribute,
+--			subDiffElements <- s.subDiffElements,
+--			isHiddenBy <- s.isHiddenBy,
+--			conflicting <- s.conflicting,
+--			kind <- s.kind
+--		)
+--}
+
+
+
+rule UpdateAttribute {
+	from
+		s:DIFF!UpdateAttribute
+	to
+		t:diffExtended!UpdateAttribute(
+			leftElement <- s.leftElement,
+			rightElement <- s.rightElement,
+			attribute <- s.attribute,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy,
+			conflicting <- s.conflicting,
+			kind <- s.kind
+		)
+}
+

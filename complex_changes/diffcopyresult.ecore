@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xmi:XMI xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:diff="http://www.eclipse.org/emf/compare/diff/1.1">
+  <diff:DiffModel left="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore"
+      right="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol14.ecore">
+    <ownedElements xsi:type="diff:DiffGroup">
+      <subDiffElements xsi:type="diff:DiffGroup"/>
+    </ownedElements>
+  </diff:DiffModel>
+  <diff:DiffGroup/>
+  <diff:DiffGroup/>
+  <diff:MoveModelElement/>
+</xmi:XMI>

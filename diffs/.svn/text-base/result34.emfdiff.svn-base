@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="Cp1252"?>
+<diff:ModelInputSnapshot xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:diff="http://www.eclipse.org/emf/compare/diff/1.1" xmlns:match="http://www.eclipse.org/emf/compare/match/1.1" date="2012-03-02T17:48:31.505+0100">
+  <diff left="platform:/resource/examination-assistant/final/ExamXML.ecore" right="platform:/resource/examination-assistant/final/ExamXMLFinal.ecore">
+    <ownedElements xsi:type="diff:DiffGroup">
+      <subDiffElements xsi:type="diff:DiffGroup">
+        <subDiffElements xsi:type="diff:DiffGroup">
+          <subDiffElements xsi:type="diff:DiffGroup">
+            <subDiffElements xsi:type="diff:UpdateAttribute">
+              <attribute href="http://www.eclipse.org/emf/2002/Ecore#//ENamedElement/name"/>
+              <leftElement href="platform:/resource/examination-assistant/final/ExamXML.ecore#//ExamElement/question"/>
+              <rightElement href="platform:/resource/examination-assistant/final/ExamXMLFinal.ecore#//ExamElement/optional"/>
+            </subDiffElements>
+            <leftParent href="platform:/resource/examination-assistant/final/ExamXML.ecore#//ExamElement/question"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:AddModelElement">
+            <leftParent href="platform:/resource/examination-assistant/final/ExamXML.ecore#//ExamElement"/>
+            <rightElement href="platform:/resource/examination-assistant/final/ExamXMLFinal.ecore#//ExamElement/attr_EE"/>
+          </subDiffElements>
+          <leftParent href="platform:/resource/examination-assistant/final/ExamXML.ecore#//ExamElement"/>
+        </subDiffElements>
+        <subDiffElements xsi:type="diff:DiffGroup">
+          <subDiffElements xsi:type="diff:UpdateAttribute">
+            <attribute href="http://www.eclipse.org/emf/2002/Ecore#//ENamedElement/name"/>
+            <leftElement href="platform:/resource/examination-assistant/final/ExamXML.ecore#//OpenElement"/>
+            <rightElement href="platform:/resource/examination-assistant/final/ExamXMLFinal.ecore#//OElement"/>
+          </subDiffElements>
+          <leftParent href="platform:/resource/examination-assistant/final/ExamXML.ecore#//OpenElement"/>
+        </subDiffElements>
+        <subDiffElements xsi:type="diff:DiffGroup">
+          <subDiffElements xsi:type="diff:UpdateAttribute">
+            <attribute href="http://www.eclipse.org/emf/2002/Ecore#//ENamedElement/name"/>
+            <leftElement href="platform:/resource/examination-assistant/final/ExamXML.ecore#//MultipleChoiceElement"/>
+            <rightElement href="platform:/resource/examination-assistant/final/ExamXMLFinal.ecore#//MCElement"/>
+          </subDiffElements>
+          <leftParent href="platform:/resource/examination-assistant/final/ExamXML.ecore#//MultipleChoiceElement"/>
+        </subDiffElements>
+        <subDiffElements xsi:type="diff:AddModelElement">
+          <leftParent href="platform:/resource/examination-assistant/final/ExamXML.ecore#/"/>
+          <rightElement href="platform:/resource/examination-assistant/final/ExamXMLFinal.ecore#//ExerciseElement"/>
+        </subDiffElements>
+        <subDiffElements xsi:type="diff:AddModelElement">
+          <leftParent href="platform:/resource/examination-assistant/final/ExamXML.ecore#/"/>
+          <rightElement href="platform:/resource/examination-assistant/final/ExamXMLFinal.ecore#//ExtraQuestion"/>
+        </subDiffElements>
+        <leftParent href="platform:/resource/examination-assistant/final/ExamXML.ecore#/"/>
+      </subDiffElements>
+    </ownedElements>
+  </diff>
+ 
+</diff:ModelInputSnapshot>

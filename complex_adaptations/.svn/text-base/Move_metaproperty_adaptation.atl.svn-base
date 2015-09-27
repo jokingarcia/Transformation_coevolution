@@ -1,0 +1,194 @@
+
+module Move_metaproperty_adaptation; -- Module Template
+create OUT : ATL refining IN : ATL, diff : DIFF;
+
+helper def : MMSize : Integer = 11;
+helper def : EcoreSize : Integer = 7;
+helper def : diffSize : Integer = 6;
+helper def : resultXXSize : Integer = 10;
+helper def : resultSize : Integer = 8;
+helper def : sourceMM : String = 'ExamXML';
+helper def : targetMM : String = 'AssistantMVC';
+
+helper def : getMoveModelElement : Sequence(String) =
+	DIFF!MoveModelElement.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->collect(e|e.rightElement.toString().split('!')->last());
+helper def : getMoveModelElementRight : Sequence(String) =
+	DIFF!MoveModelElement.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->collect(e|e.rightTarget.toString().split('!')->last());
+helper def : getMoveModelElementLeft : Sequence(String) =
+	DIFF!MoveModelElement.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->collect(e|e.leftTarget.toString().split('!')->last());
+
+--returns if param1 is in param2
+helper def : containsString (param1 : String, param2 : Sequence(String)) : Boolean =
+	param2->iterate(p; y : Boolean = false |
+		if p = param1 then
+			true
+		else
+			if y = true then
+				true
+			else
+				false
+			endif
+		endif
+	)
+	;
+
+helper def : deletedBindings : Sequence(ATL!Binding) =
+	ATL!Binding.allInstances()->select(e|e.propertyName=self.getMoveModelElement->first());
+
+helper def : elementIncludeBinding (param : ATL!SimpleOutPatternElement) : Boolean =
+	if not param.bindings.oclIsUndefined() then
+		param.bindings->select(e|e.propertyName=self.getMoveModelElement->first()).size()>0
+	else
+		false
+	endif;
+
+helper def : deletedBindingOutPatterns (param : Sequence(ATL!SimpleOutPatternElement)) : Boolean =
+	param->select(e|self.elementIncludeBinding(e)).size()>0;
+
+--moved attribute in the target MM
+helper def : deletedRule : Sequence(ATL!MatchedRule) =
+	ATL!MatchedRule.allInstances()
+	->select(e|self.deletedBindingOutPatterns(e.outPattern.elements));
+	
+-----------------ADD METAPROPERTY------------------
+--Retrieve added metaproperties
+helper def : idAddMetaproperty : Integer = 1;
+
+--Returns true if exists new metaproperty
+helper def : existAddModelElement : Boolean =
+	not DIFF!AddModelElement.allInstances()->asSequence()->select(e|e.leftParent.toString().split('!')->last() <> self.sourceMM)->first().oclIsUndefined();
+
+helper context Integer def : reduce() : Integer =
+	if self > thisModule.getAddedMetaproperties.size() then
+		self - thisModule.getAddedMetaproperties.size()
+	else
+		self
+	endif;
+---------------ELIMINATE METAPROPERTY---------------------
+
+helper def : delete (param : Sequence(ATL!Binding)) : Sequence(ATL!Binding) =
+	let elements : Sequence(String) = self.getMoveModelElement
+	in elements->iterate(p; y : Sequence(ATL!Binding) = param |
+		if self.contains(p, param) then
+		 	y->excluding(param->at(self.index(p, param)))
+		else
+			y
+		endif
+	)
+	;
+helper def : contains (param1 : String, param2 : Sequence(ATL!Binding)) : Boolean =
+	param2->iterate(p; y : Boolean = false |
+		if p.propertyName = param1 then
+			true
+		else
+			if y = true then
+				true
+			else
+				false
+			endif
+		endif
+	)
+	;
+helper def : index (param1 : String, param2 : Sequence(ATL!Binding)) : Integer =
+	param2->iterate(p; y : Integer = 0 |
+		if p.propertyName = param1 then
+			param2->indexOf(p)
+		else
+			y
+		endif
+	)
+	;
+
+--==============================RULES===========================================
+	
+rule Module {
+	from
+		s : ATL!Module
+	to
+		t : ATL!Module (
+			name <- s.name,
+			libraries <- s.libraries,
+			isRefining <- s.isRefining,
+			inModels <- s.inModels,
+			outModels <- s.outModels,
+			elements <- s.elements
+		)
+		do{
+			
+		}
+}
+
+----------------------ADD METAPROPERTY------------------------------------------
+
+rule SimpleOutPatternElement1 {
+	from
+		s : ATL!SimpleOutPatternElement
+
+	to
+		t : ATL!SimpleOutPatternElement(
+			type <- s.type,
+			varName <- s.varName,
+			--bindings <- s.bindings
+			--Delete metaproperty if it uses a moved attribute
+			bindings <- self.delete(s.bindings)
+		)
+	do {
+			
+			self.getMoveModelElement->toString().println();
+			self.getMoveModelElementRight->toString().println();
+			self.getMoveModelElementLeft->toString().println();
+			'deleted bindings: '.concat(self.deletedBindings->toString()).println();
+			self.deletedRule->toString().println();
+			--t.bindings <- t.bindings->append(self.deletedBindings->first()->first());
+			--Binding is added if the OutPattern is equal to the leftTarget of moved attribute
+			if (s.type.name=self.getMoveModelElementLeft->first()) {
+				t.bindings <- t.bindings->append(thisModule.Binding2Binding(t.bindings));
+				
+			}else{
+				false;
+			}
+				
+		}
+}
+
+--add metaproperty
+
+lazy rule Binding2Binding {
+	from
+		s : ATL!Binding
+
+	
+	to
+		b : ATL!Binding ( 
+			propertyName <- self.deletedBindings->first().propertyName,
+			value <- arg,
+			commentsBefore <- Set {'--comment'}
+		),
+		--xml.optional
+		ipe_i_c2 : ATL!SimpleInPatternElement (
+			varName <- self.deletedRule->first().inPattern.elements->first().varName,
+			type <- ipet_i_c2
+		),
+		ipet_i_c2 : ATL!OclModelElement (
+			name <- 'name',
+			model <- om
+		),
+		om : ATL!OclModel (
+			--Source MM name
+			name <- self.sourceMM
+		),
+		arg : ATL!NavigationOrAttributeCallExp (
+			name <- self.deletedBindings->first().value.name,
+			source <- ve
+		),
+		ve : ATL!VariableExp (
+			referredVariable <- ipe_i_c2	
+		)
+		do{
+			
+		}
+		
+}

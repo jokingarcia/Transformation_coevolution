@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xmi:XMI xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:diffExtended="http://www.eclipse.org/emf/compare/diffExtended/1.1">
+  <diffExtended:DiffModel left="platform:/resource/Examination_Assistant/metamodels/AssistantMVC.ecore"
+      right="platform:/resource/Examination_Assistant/metamodels/AssistantMVCEvol20.ecore">
+    <complexChanges impact="resolvable" changeType="Flatten_hierarchy">
+      <atomicChanges xsi:type="diffExtended:RemoveReferenceValue">
+        <reference href="http://www.eclipse.org/emf/2002/Ecore#//EClass/eSuperTypes"/>
+        <rightElement href="platform:/resource/Examination_Assistant/metamodels/AssistantMVCEvol20.ecore#//ExamView"/>
+        <leftElement href="platform:/resource/Examination_Assistant/metamodels/AssistantMVC.ecore#//ExamView"/>
+        <leftRemovedTarget href="platform:/resource/Examination_Assistant/metamodels/AssistantMVC.ecore#//View"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diffExtended:RemoveReferenceValue">
+        <reference href="http://www.eclipse.org/emf/2002/Ecore#//EClass/eSuperTypes"/>
+        <rightElement href="platform:/resource/Examination_Assistant/metamodels/AssistantMVCEvol20.ecore#//ExamItemView"/>
+        <leftElement href="platform:/resource/Examination_Assistant/metamodels/AssistantMVC.ecore#//ExamItemView"/>
+        <leftRemovedTarget href="platform:/resource/Examination_Assistant/metamodels/AssistantMVC.ecore#//View"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diffExtended:AddModelElement">
+        <leftParent href="platform:/resource/Examination_Assistant/metamodels/AssistantMVC.ecore#//ExamView"/>
+        <rightElement href="platform:/resource/Examination_Assistant/metamodels/AssistantMVCEvol20.ecore#//ExamView/fontName"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diffExtended:AddModelElement">
+        <leftParent href="platform:/resource/Examination_Assistant/metamodels/AssistantMVC.ecore#//ExamView"/>
+        <rightElement href="platform:/resource/Examination_Assistant/metamodels/AssistantMVCEvol20.ecore#//ExamView/fontColor"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diffExtended:AddModelElement">
+        <leftParent href="platform:/resource/Examination_Assistant/metamodels/AssistantMVC.ecore#//ExamItemView"/>
+        <rightElement href="platform:/resource/Examination_Assistant/metamodels/AssistantMVCEvol20.ecore#//ExamItemView/fontName"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diffExtended:AddModelElement">
+        <leftParent href="platform:/resource/Examination_Assistant/metamodels/AssistantMVC.ecore#//ExamItemView"/>
+        <rightElement href="platform:/resource/Examination_Assistant/metamodels/AssistantMVCEvol20.ecore#//ExamItemView/fontColor"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diffExtended:RemoveModelElement">
+        <rightParent href="platform:/resource/Examination_Assistant/metamodels/AssistantMVCEvol20.ecore#/"/>
+        <leftElement href="platform:/resource/Examination_Assistant/metamodels/AssistantMVC.ecore#//View"/>
+      </atomicChanges>
+    </complexChanges>
+  </diffExtended:DiffModel>
+  <diffExtended:AddModelElement>
+    <leftParent href="platform:/resource/Examination_Assistant/metamodels/AssistantMVC.ecore#//ExamView"/>
+    <rightElement href="platform:/resource/Examination_Assistant/metamodels/AssistantMVCEvol20.ecore#//ExamView/controller"/>
+  </diffExtended:AddModelElement>
+  <diffExtended:AddModelElement>
+    <leftParent href="platform:/resource/Examination_Assistant/metamodels/AssistantMVC.ecore#//ExamItemView"/>
+    <rightElement href="platform:/resource/Examination_Assistant/metamodels/AssistantMVCEvol20.ecore#//ExamItemView/controller"/>
+  </diffExtended:AddModelElement>
+  <diffExtended:RemoveModelElement>
+    <rightParent href="platform:/resource/Examination_Assistant/metamodels/AssistantMVCEvol20.ecore#//Exam/views"/>
+    <leftElement href="platform:/resource/Examination_Assistant/metamodels/AssistantMVC.ecore#//Exam/views/@eGenericType"/>
+  </diffExtended:RemoveModelElement>
+  <diffExtended:RemoveModelElement>
+    <rightParent href="platform:/resource/Examination_Assistant/metamodels/AssistantMVCEvol20.ecore#//ExamView"/>
+    <leftElement href="platform:/resource/Examination_Assistant/metamodels/AssistantMVC.ecore#//ExamView/@eGenericSuperTypes.0"/>
+  </diffExtended:RemoveModelElement>
+  <diffExtended:RemoveModelElement>
+    <rightParent href="platform:/resource/Examination_Assistant/metamodels/AssistantMVCEvol20.ecore#//ExamItemView"/>
+    <leftElement href="platform:/resource/Examination_Assistant/metamodels/AssistantMVC.ecore#//ExamItemView/@eGenericSuperTypes.0"/>
+  </diffExtended:RemoveModelElement>
+  <diffExtended:UpdateUniqueReferenceValue>
+    <reference href="http://www.eclipse.org/emf/2002/Ecore#//ETypedElement/eType"/>
+    <rightElement href="platform:/resource/Examination_Assistant/metamodels/AssistantMVCEvol20.ecore#//Exam/views"/>
+    <leftElement href="platform:/resource/Examination_Assistant/metamodels/AssistantMVC.ecore#//Exam/views"/>
+    <rightTarget href="platform:/resource/Examination_Assistant/metamodels/AssistantMVC.ecore#//View"/>
+  </diffExtended:UpdateUniqueReferenceValue>
+</xmi:XMI>

@@ -1,0 +1,27 @@
+module exam2mvc;
+create OUT : AssistantMVC from IN : ExamXML;
+rule Exams {
+  from  xml : ExamXML!Exam
+  to  mvc : AssistantMVC!Exam (
+      examItems <- xml.elements )}
+rule MultipleChoice {
+  from  xml : ExamXML!MultipleChoiceElement
+  to controller : AssistantMVC!MultipleChoiceController,
+    view : AssistantMVC!MultipleChoiceView (
+      controller <- controller,
+      fontName <- 'Times',
+      fontColor <- 'Red' ),
+    model : AssistantMVC!MultipleChoice (
+      question <- xml.question,
+      observers <- view )}
+rule ExamElement {
+  from  xml : ExamXML!ExamElement
+    (  xml.oclIsTypeOf(ExamXML!OpenElement).openAttribute = true  )
+  to view : AssistantMVC!OpenView (
+      optional <- xml.optional )}
+--NEW RULE
+rule NewOpenElement {
+  from  xml : ExamXML!NewOpenElement
+  to t : AssistantMVC!OpenView (
+      --comment
+      fontColor <- xml.OEAttribute )}

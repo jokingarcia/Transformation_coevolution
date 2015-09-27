@@ -1,0 +1,1524 @@
+-- Converts expressions to CNF
+
+module CNF; -- Module Template
+create OUT : ATL refining IN : ATL;
+
+helper def: cont : Integer =1;
+helper def: sourceMM : String = 'Exam';
+helper def: targetMM : String = 'AssistantMVC';
+
+--sources OperatorCallExp with operatorName='not' are even
+helper context ATL!OperatorCallExp def : EvenOperatorCallExpNot(param : Integer) : Boolean =
+	if self.source.oclIsTypeOf(ATL!OperatorCallExp) then
+		if self.source.operationName = 'not' then
+			self.source.EvenOperatorCallExpNot(param + 1)
+		else
+			false
+		endif
+	else
+		if param.mod(2)=0 then
+			true
+		else
+			false
+		endif
+	endif;
+
+--returns the first source which is not of type OperatorCallExp
+helper context ATL!OperatorCallExp def : getFirstNotOperatorCallExp() : ATL!NavigationOrAttributeCallExp =
+		if self.source.oclIsTypeOf(ATL!OperatorCallExp) then
+			self.source.getFirstNotOperatorCallExp()
+		else
+			self.source
+		endif
+		
+	;
+
+--##############################################################################
+--#############################################################################
+--############################################################################
+--#######################RULES################################################
+--#############################################################################
+--#############################################################################
+--###############################################################################
+
+--not(not(not(not... expression) -> expression (recursive)
+--if a filter if of type "OperatorCallExp" and operationName="not" and have
+--a source "OperatorCallExp" "not" too, and the source "operationCallExp"
+-- are even with operationName='not', move up first element which is not of
+--type OperatorCallExp as the filter.
+rule MatchedRule {
+	from
+		s: ATL!MatchedRule
+		(
+		if not s.inPattern.filter.oclIsUndefined() then
+			if s.inPattern.filter.oclIsTypeOf(ATL!OperatorCallExp) then
+				if not s.inPattern.filter.source.oclIsUndefined() then	
+					if s.inPattern.filter.EvenOperatorCallExpNot(1) then
+						true
+					else
+						false
+					endif
+				else
+					false
+				endif
+			else
+				false
+			endif
+		else
+			false
+		endif
+		)
+	to
+		t : ATL!MatchedRule(
+			--delete filter and source and move up the source of the source
+			--as a filter.
+			--inPattern <- s.inPattern,
+			inPattern <- ip_i_c2,
+			children <- s.children,
+			superRule <- s.superRule,
+			isAbstract <- s.isAbstract,
+			isRefining <- s.isRefining,
+			isNoDefault <- s.isNoDefault,
+			"module" <- s."module",
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter,
+			outPattern <- s.outPattern,
+			actionBlock <- s.actionBlock,
+			variables <- s.variables,
+			name <- s.name	
+		),
+		ip_i_c2 : ATL!InPattern (
+			elements <- s.inPattern.elements,
+			"rule" <- s.inPattern."rule",
+			filter <- s.inPattern.filter.getFirstNotOperatorCallExp()
+			
+		)
+		
+		
+	do{
+		'not recursive'.println();
+	}
+}
+
+
+--not(not expression) -> expression
+--if a filter if of type "OperatorCallExp" and operationName="not" and have
+--a source "OperatorCallExp" "not" too, delete both and move up the source
+--of the source as a filter.
+--rule MatchedRule {
+--	from
+--		s: ATL!MatchedRule
+--		(
+--		if not s.inPattern.filter.oclIsUndefined() then
+--			if s.inPattern.filter.oclIsTypeOf(ATL!OperatorCallExp) then
+--				if not s.inPattern.filter.source.oclIsUndefined() then	
+--					if s.inPattern.filter.source.oclIsTypeOf(ATL!OperatorCallExp) then
+--						if s.inPattern.filter.operationName = 'not' and s.inPattern.filter.source.operationName = 'not' then
+--							true
+--						else
+--							false
+--						endif
+--					else
+--						false
+--					endif
+--				else
+--					false
+--				endif
+--			else
+--				false
+--			endif
+--		else
+--			false
+--		endif
+--		)
+--	to
+--		t : ATL!MatchedRule(
+--			--delete filter and source and move up the source of the source
+--			--as a filter.
+--			--inPattern <- s.inPattern,
+--			inPattern <- ip_i_c2,
+--			children <- s.children,
+--			superRule <- s.superRule,
+--			isAbstract <- s.isAbstract,
+--			isRefining <- s.isRefining,
+--			isNoDefault <- s.isNoDefault,
+--			"module" <- s."module",
+--			location <- s.location,
+--			commentsBefore <- s.commentsBefore,
+--			commentsAfter <- s.commentsAfter,
+--			outPattern <- s.outPattern,
+--			actionBlock <- s.actionBlock,
+--			variables <- s.variables,
+--			name <- s.name	
+--		),
+--		ip_i_c2 : ATL!InPattern (
+--			elements <- s.inPattern.elements,
+--			"rule" <- s.inPattern."rule",
+--			filter <- s.inPattern.filter.source.source
+--		)
+--	do{
+--		'not'.println();
+--	}
+--}
+
+--if A then B else C -> (not A or B) and (A or C)
+--if a filter of type "IfExp" is found, convert to filter of type
+--OperatorCallExp with operationName=and etc...
+--rule IfExpression {
+--	from
+--		s: ATL!MatchedRule
+--		(
+--		if not s.inPattern.filter.oclIsUndefined() then
+--			if s.inPattern.filter.oclIsTypeOf(ATL!IfExp) then
+--				if not s.inPattern.filter.condition.oclIsUndefined() then
+--					if s.inPattern.filter.condition.oclIsTypeOf(ATL!NavigationOrAttributeCallExp) then
+--						true
+--					else
+--						false
+--					endif
+--				else
+--					false
+--				endif
+--			else
+--				false
+--			endif
+--		else
+--			false
+--		endif
+--		)
+--	to
+--		t : ATL!MatchedRule(
+--			inPattern <- ip_i_c2,
+--			children <- s.children,
+--			superRule <- s.superRule,
+--			isAbstract <- s.isAbstract,
+--			isRefining <- s.isRefining,
+--			isNoDefault <- s.isNoDefault,
+--			"module" <- s."module",
+--			location <- s.location,
+--			commentsBefore <- s.commentsBefore,
+--			commentsAfter <- s.commentsAfter,
+--			outPattern <- s.outPattern,
+--			actionBlock <- s.actionBlock,
+--			variables <- s.variables,
+--			name <- s.name	
+--		),
+--		--remember to fill all the attributes!
+--		ip_i_c2 : ATL!InPattern (
+--			elements <- Sequence{ipe_i_c2},
+--			"rule" <- s.inPattern."rule",
+--			filter <- oce
+--		),
+--		ipe_i_c2 : ATL!SimpleInPatternElement (
+--			varName <- s.inPattern.elements->first().varName,--'s'
+--			type <- ipet_i_c2,
+--			variableExp <- s.inPattern.elements->first().variableExp
+--		),
+--		ipet_i_c2 : ATL!OclModelElement (
+--			name <- s.inPattern.elements->first().type.name,--'Attribute'
+--			model <- om
+--		),
+--		om : ATL!OclModel (
+--			name <- self.sourceMM	--Source MM name
+--		),
+--		--filter
+--		oce : ATL!OperatorCallExp (
+--			operationName <- 'and',
+--			source <- oce2,
+--			arguments <- oce3
+--		),
+--		oce2 : ATL!OperatorCallExp (
+--			operationName <- 'or',
+--			source <- oce4,
+--			arguments <- be
+--		),
+--		oce4 : ATL!OperatorCallExp (
+--			operationName <- 'not',
+--			source <- noace
+--			--arguments <- be
+--		),
+--		oce3 : ATL!OperatorCallExp (
+--			operationName <- 'or',
+--			source <- noace2,
+--			arguments <- be2
+--		),
+--		noace : ATL!NavigationOrAttributeCallExp (
+--			--name <- 'isUnique',
+--			name <- s.inPattern.filter.condition.name,--''
+--			source <- ve
+--		),
+--		noace2 : ATL!NavigationOrAttributeCallExp (
+--			name <- s.inPattern.filter.condition.name,--''
+--			source <- ve2
+--		),
+--		ve : ATL!VariableExp (
+--			referredVariable <- ipe_i_c2
+--		),
+--		ve2 : ATL!VariableExp (
+--			referredVariable <- ipe_i_c2
+--		),
+--		be : ATL!BooleanExp (
+--			booleanSymbol <- true
+--		),
+--		be2 : ATL!BooleanExp (
+--			booleanSymbol <- false
+--		)
+--	do{
+--		'If simple'.println();
+--		
+--	}
+--}
+
+--if (A1 or A2) then B else C -> (not (A1 or A2) or B) and ((A1 or A2) or C)
+--if a filter of type "IfExp" is found, convert to filter of type
+--OperatorCallExp with operationName=and etc...
+rule IfExpression2 {
+	from
+		s: ATL!MatchedRule
+		(
+		if not s.inPattern.filter.oclIsUndefined() then
+			if s.inPattern.filter.oclIsTypeOf(ATL!IfExp) then
+				if not s.inPattern.filter.condition.oclIsUndefined() then
+					if s.inPattern.filter.condition.oclIsTypeOf(ATL!OperatorCallExp) then
+						if s.inPattern.filter.condition.operationName='or' then
+							if not s.inPattern.filter.condition.source.oclIsUndefined() then
+								if s.inPattern.filter.condition.source.oclIsTypeOf(ATL!NavigationOrAttributeCallExp) then
+									true
+								else
+									false
+								endif
+							else
+								false
+							endif
+						else
+							false
+						endif
+					else
+						false
+					endif
+				else
+					false
+				endif
+			else
+				false
+			endif
+		else
+			false
+		endif
+		)
+	to
+		t : ATL!MatchedRule(
+			inPattern <- ip_i_c2,
+			children <- s.children,
+			superRule <- s.superRule,
+			isAbstract <- s.isAbstract,
+			isRefining <- s.isRefining,
+			isNoDefault <- s.isNoDefault,
+			"module" <- s."module",
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter,
+			outPattern <- s.outPattern,
+			actionBlock <- s.actionBlock,
+			variables <- s.variables,
+			name <- s.name	
+		),
+		--remember to fill all the attributes!
+		ip_i_c2 : ATL!InPattern (
+			elements <- Sequence{ipe_i_c2},
+			"rule" <- s.inPattern."rule",
+			filter <- oce
+		),
+		ipe_i_c2 : ATL!SimpleInPatternElement (
+			varName <- s.inPattern.elements->first().varName,--'s'
+			type <- ipet_i_c2,
+			variableExp <- s.inPattern.elements->first().variableExp
+		),
+		ipet_i_c2 : ATL!OclModelElement (
+			name <- s.inPattern.elements->first().type.name,--'Attribute'
+			model <- om
+		),
+		om : ATL!OclModel (
+			name <- 'KM3'	--Source MM name
+		),
+		--filter
+		oce : ATL!OperatorCallExp (
+			operationName <- 'and',
+			source <- oce2,
+			arguments <- oce3
+		),
+		oce2 : ATL!OperatorCallExp (
+			operationName <- 'or',
+			source <- oce4,
+			arguments <- be
+		),
+		oce4 : ATL!OperatorCallExp (
+			operationName <- 'not',
+			source <- oce5
+			--arguments <- be
+		),
+		--A1 or A2
+		oce5 : ATL!OperatorCallExp (
+			operationName <- 'or',
+			source <- noace,
+			arguments <- noace3
+		),
+		oce3 : ATL!OperatorCallExp (
+			operationName <- 'or',
+			source <- oce6,
+			arguments <- be2
+		),
+		oce6 : ATL!OperatorCallExp (
+			operationName <- 'or',
+			source <- noace2,
+			arguments <- noace4
+		),
+		noace : ATL!NavigationOrAttributeCallExp (
+			name <- s.inPattern.filter.condition.source.name,--'isUnique'
+			source <- ve
+		),
+		noace2 : ATL!NavigationOrAttributeCallExp (
+			name <- s.inPattern.filter.condition.source.name,--'isUnique'
+			source <- ve2
+		),
+		noace3 : ATL!NavigationOrAttributeCallExp (
+			name <- s.inPattern.filter.condition.arguments->first().name,--'isOrdered'
+			source <- ve3
+		),
+		noace4 : ATL!NavigationOrAttributeCallExp (
+			name <- s.inPattern.filter.condition.arguments->first().name,--'isOrdered'
+			source <- ve4
+		),
+		ve : ATL!VariableExp (
+			referredVariable <- ipe_i_c2
+		),
+		ve2 : ATL!VariableExp (
+			referredVariable <- ipe_i_c2
+		),
+		ve3 : ATL!VariableExp (
+			referredVariable <- ipe_i_c2
+		),
+		ve4 : ATL!VariableExp (
+			referredVariable <- ipe_i_c2
+		),
+		be : ATL!BooleanExp (
+			booleanSymbol <- true
+		),
+		be2 : ATL!BooleanExp (
+			booleanSymbol <- false
+		)
+	do{
+		'If with or'.println();
+		
+	}
+}
+
+--if nested
+--rule IfExpression_Nested {
+--	from
+--		s: ATL!MatchedRule
+--		(
+--		if not s.inPattern.filter.oclIsUndefined() then
+--			if s.inPattern.filter.oclIsTypeOf(ATL!IfExp) then
+--				if not s.inPattern.filter.condition.oclIsUndefined() then
+--					if s.inPattern.filter.condition.oclIsTypeOf(ATL!NavigationOrAttributeCallExp) then
+--						if not s.inPattern.filter.thenExpression.oclIsUndefined() then
+--							if s.inPattern.filter.thenExpression.oclIsTypeOf(ATL!IfExp) then
+--								true
+--							else
+--								false
+--							endif
+--						else
+--							false
+--						endif
+--					else
+--						false
+--					endif
+--				else
+--					false
+--				endif
+--			else
+--				false
+--			endif
+--		else
+--			false
+--		endif
+--		)
+--	to
+--		t : ATL!MatchedRule(
+--			inPattern <- ip_i_c2,
+--			children <- s.children,
+--			superRule <- s.superRule,
+--			isAbstract <- s.isAbstract,
+--			isRefining <- s.isRefining,
+--			isNoDefault <- s.isNoDefault,
+--			"module" <- s."module",
+--			location <- s.location,
+--			commentsBefore <- s.commentsBefore,
+--			commentsAfter <- s.commentsAfter,
+--			outPattern <- s.outPattern,
+--			actionBlock <- s.actionBlock,
+--			variables <- s.variables,
+--			name <- s.name	
+--		),
+--		--remember to fill all the attributes!
+--		ip_i_c2 : ATL!InPattern (
+--			elements <- Sequence{ipe_i_c2},
+--			"rule" <- s.inPattern."rule",
+--			filter <- oce
+--		),
+--		ipe_i_c2 : ATL!SimpleInPatternElement (
+--			varName <- s.inPattern.elements->first().varName,--'s'
+--			type <- ipet_i_c2,
+--			variableExp <- s.inPattern.elements->first().variableExp
+--		),
+--		ipet_i_c2 : ATL!OclModelElement (
+--			name <- s.inPattern.elements->first().type.name,--'Attribute'
+--			model <- om
+--		),
+--		om : ATL!OclModel (
+--			name <- 'KM3'	--Source MM name
+--		),
+--		--filter
+--		oce : ATL!OperatorCallExp (
+--			operationName <- 'and',
+--			source <- oce2,
+--			arguments <- oce3
+--		),
+--		oce2 : ATL!OperatorCallExp (
+--			operationName <- 'or',
+--			source <- oce4,
+--			arguments <- be
+--		),
+--		oce4 : ATL!OperatorCallExp (
+--			operationName <- 'not',
+--			source <- noace
+--			--arguments <- be
+--		),
+--		oce3 : ATL!OperatorCallExp (
+--			operationName <- 'or',
+--			source <- noace2,
+--			arguments <- be2
+--		),
+--		noace : ATL!NavigationOrAttributeCallExp (
+--			--name <- 'isUnique',
+--			name <- s.inPattern.filter.condition.name,--'isUnique'
+--			source <- ve
+--		),
+--		noace2 : ATL!NavigationOrAttributeCallExp (
+--		name <- s.inPattern.filter.condition.name,--'isUnique'
+--			source <- ve2
+--		),
+--		ve : ATL!VariableExp (
+--			referredVariable <- ipe_i_c2
+--		),
+--		ve2 : ATL!VariableExp (
+--			referredVariable <- ipe_i_c2
+--		),
+--		be : ATL!BooleanExp (
+--			booleanSymbol <- true
+--		),
+--		be2 : ATL!BooleanExp (
+--			booleanSymbol <- false
+--		)
+--	do{
+--		'If nested'.println();
+--		
+--	}
+--}
+
+--######################################################################
+--#########IF CASE###########################################################
+
+-- if xml.optional then                            if xml.optional then
+--        if xml.long then                            not xml.long or not xml.optional or true and xml.optional or false and xml.long or false
+--          not xml.optional or true and           else
+--		  xml.optional or false              ->     false
+--        else                                     endif
+--          false
+--        endif
+-- else
+--        false
+-- endif
+--rule IfExp2 {
+--	from
+--		s: ATL!IfExp(
+--			if not s.thenExpression.oclIsUndefined() then
+--				if s.thenExpression.oclIsTypeOf(ATL!IfExp) then
+--					if not s.condition.oclIsUndefined() then
+--						if s.condition.oclIsTypeOf(ATL!NavigationOrAttributeCallExp) then
+--							if not s.elseExpression.oclIsUndefined() then
+--								if s.elseExpression.oclIsTypeOf(ATL!BooleanExp) then
+--									if not s.condition.source.oclIsUndefined() then
+--										if s.condition.source.oclIsTypeOf(ATL!VariableExp) then
+--											if not s.thenExpression.thenExpression.oclIsUndefined() then--
+--												if not s.thenExpression.thenExpression.oclIsTypeOf(ATL!IfExp) then--
+--													true
+--												else
+--													false
+--												endif
+--											else
+--												false
+--											endif
+--										else
+--											false
+--										endif
+--									else
+--										false
+--									endif
+--								else
+--									false
+--								endif
+--							else
+--								false
+--							endif
+--						else
+--							false
+--						endif
+--					else
+--						false
+--					endif
+--				else
+--					false
+--				endif
+--			else
+--				false
+--			endif
+--		)
+--	to
+--		ife : ATL!IfExp ( --the order in the attributes matters!
+--			
+--			condition <- s.condition,
+--			elseExpression <- s.elseExpression,
+--			thenExpression <- oce
+--			
+--		),
+--		oce : ATL!OperatorCallExp (
+--			operationName <- 'and',
+--			source <- oce2,
+--			arguments <- oce3
+--		),
+--		oce2 : ATL!OperatorCallExp (
+--			operationName <- 'or',
+--			source <- oce4,
+--			arguments <- s.thenExpression.thenExpression--
+--			
+--		),
+--		oce4 : ATL!OperatorCallExp (
+--			operationName <- 'not',
+--			source <- noace
+--		),
+--		oce3 : ATL!OperatorCallExp (
+--			operationName <- 'or',
+--			source <- noace2,
+--			arguments <- be2
+--		),
+--		noace : ATL!NavigationOrAttributeCallExp (
+--			name <- s.thenExpression.condition.name,--'long'
+--			source <- ve
+--		),
+--		noace2 : ATL!NavigationOrAttributeCallExp (
+--			name <- s.thenExpression.condition.name,--'long'
+--			source <- ve2
+--		),
+--		ve : ATL!VariableExp (
+--			referredVariable <- vd
+--		),
+--		ve2 : ATL!VariableExp (
+--			referredVariable <- vd
+--		),
+--		be : ATL!BooleanExp (
+--			booleanSymbol <- true
+--		),
+--		be2 : ATL!BooleanExp (
+--			booleanSymbol <- false
+--		),
+--		be3 : ATL!BooleanExp (
+--			booleanSymbol <- true
+--		),
+--		vd : ATL!VariableDeclaration (
+--			id <- 'id',
+--			--varName <- s.refImmediateComposite().refImmediateComposite().elements->first().varName,
+--			varName <- 'xml'
+--			--variableExp <- s.thenExpression.thenExpression.source.source.source.source.referredVariable
+--			
+--		)
+--
+--		
+--	do {
+--		'IfExp2 rule'.println();
+--		
+--		--oce2.arguments <- self.OCE2OCE(oce2.arguments);
+--		--self.generateOperatorCallExp(s);
+--	}
+--}
+
+--rule IfExp2Recursive {
+--	from
+--		s: ATL!IfExp(
+--			if not s.thenExpression.oclIsUndefined() then
+--				if s.thenExpression.oclIsTypeOf(ATL!IfExp) then
+--					if not s.condition.oclIsUndefined() then
+--						if s.condition.oclIsTypeOf(ATL!NavigationOrAttributeCallExp) then
+--							if not s.elseExpression.oclIsUndefined() then
+--								if s.elseExpression.oclIsTypeOf(ATL!BooleanExp) then
+--									if not s.condition.source.oclIsUndefined() then
+--										if s.condition.source.oclIsTypeOf(ATL!VariableExp) then
+--											if not s.thenExpression.thenExpression.oclIsUndefined() then--
+--												if s.thenExpression.thenExpression.oclIsTypeOf(ATL!IfExp) then--
+--													true
+--												else
+--													false
+--												endif
+--											else
+--												false
+--											endif
+--										else
+--											false
+--										endif
+--									else
+--										false
+--									endif
+--								else
+--									false
+--								endif
+--							else
+--								false
+--							endif
+--						else
+--							false
+--						endif
+--					else
+--						false
+--					endif
+--				else
+--					false
+--				endif
+--			else
+--				false
+--			endif
+--		)
+--	to
+--		ife : ATL!IfExp ( --the order in the attributes matters!
+--			
+--			condition <- s.condition,
+--			elseExpression <- s.elseExpression,
+--			thenExpression <- oce
+--			
+--		),
+--		oce : ATL!OperatorCallExp (
+--			operationName <- 'and',
+--			source <- oce2,
+--			arguments <- oce3
+--		),
+--		oce2 : ATL!OperatorCallExp (
+--			operationName <- 'or',
+--			source <- oce4
+--			--arguments <- s.thenExpression.thenExpression	
+--		),
+--		oce4 : ATL!OperatorCallExp (
+--			operationName <- 'not',
+--			source <- noace
+--		),
+--		oce3 : ATL!OperatorCallExp (
+--			operationName <- 'or',
+--			source <- noace2,
+--			arguments <- be2
+--		),
+--		noace : ATL!NavigationOrAttributeCallExp (
+--			name <- s.thenExpression.condition.name,--'long'
+--			source <- ve
+--		),
+--		noace2 : ATL!NavigationOrAttributeCallExp (
+--			name <- s.thenExpression.condition.name,--'long'
+--			source <- ve2
+--		),
+--		ve : ATL!VariableExp (
+--			referredVariable <- vd
+--		),
+--		ve2 : ATL!VariableExp (
+--			referredVariable <- vd
+--		),
+--		be : ATL!BooleanExp (
+--			booleanSymbol <- true
+--		),
+--		be2 : ATL!BooleanExp (
+--			booleanSymbol <- false
+--		),
+--		be3 : ATL!BooleanExp (
+--			booleanSymbol <- true
+--		),
+--		vd : ATL!VariableDeclaration (
+--			id <- 'id',
+--			--varName <- s.refImmediateComposite().refImmediateComposite().elements->first().varName,
+--			varName <- 'xml'
+--			--variableExp <- s.thenExpression.thenExpression.source.source.source.source.referredVariable
+--			
+--		)
+--
+--		
+--	do {
+--		'IfExp2Recursive rule'.println();
+--		--oce2.arguments <- self.generateOperatorCallExp(s);
+--		oce2.arguments <- self.IfExp2OperatorCallExp(s.thenExpression.thenExpression);
+--		
+--	}
+--}
+
+--if xml.optional then
+--	not xml.long or...
+--else
+--	false
+--endif
+rule InPattern {
+	from
+		s: ATL!InPattern(
+			if not s.filter.oclIsUndefined() then
+				if s.filter.oclIsTypeOf(ATL!IfExp) then
+					if not s.filter.thenExpression.oclIsUndefined() then
+						--if s.filter.thenExpression.oclIsTypeOf(ATL!OperatorCallExp) then
+						if s.filter.thenExpression.oclIsKindOf(ATL!OclExpression) then
+							if not s.filter.condition.oclIsUndefined() then
+								if s.filter.condition.oclIsTypeOf(ATL!NavigationOrAttributeCallExp) then
+									if not s.filter.elseExpression.oclIsUndefined() then
+										if s.filter.elseExpression.oclIsTypeOf(ATL!BooleanExp) then
+											if not s.filter.condition.source.oclIsUndefined() then
+												if s.filter.condition.source.oclIsTypeOf(ATL!VariableExp) then
+													true
+--													if not s.filter.thenExpression.oclIsTypeOf(ATL!IfExp) then
+--														true
+--													else
+--														false
+--													endif
+												else
+													false
+												endif
+											else
+												false
+											endif
+										else
+											false
+										endif
+									else
+										false
+									endif
+								else
+									false
+								endif
+							else
+								false
+							endif
+						else
+							false
+						endif
+					else
+						false
+					endif
+				else
+					false
+				endif
+			else
+				false
+			endif
+			
+		)
+	to
+		ip : ATL!InPattern(
+			elements <- s.elements,
+			filter <- oce
+		),
+		
+		oce : ATL!OperatorCallExp (
+			operationName <- 'and',
+			source <- oce2,
+			arguments <- oce3
+		),
+		oce2 : ATL!OperatorCallExp (
+			operationName <- 'or',
+			source <- oce4
+			--arguments <- s.filter.thenExpression
+		),
+		oce4 : ATL!OperatorCallExp (
+			operationName <- 'not',
+			source <- noace
+		),
+		oce3 : ATL!OperatorCallExp (
+			operationName <- 'or',
+			source <- noace2,
+			arguments <- be2
+		),
+		noace : ATL!NavigationOrAttributeCallExp (
+			name <- s.filter.condition.name,
+			source <- ve
+		),
+		noace2 : ATL!NavigationOrAttributeCallExp (
+			name <- s.filter.condition.name,--'long'
+			source <- ve2
+		),
+		ve : ATL!VariableExp (
+			referredVariable <- vd
+			
+		),
+		ve2 : ATL!VariableExp (
+			referredVariable <- vd
+		),
+		be : ATL!BooleanExp (
+			booleanSymbol <- true
+		),
+		be2 : ATL!BooleanExp (
+			booleanSymbol <- false
+		),
+		vd : ATL!VariableDeclaration (
+			id <- 'id',
+			--varName <- s.refImmediateComposite().refImmediateComposite().elements->first().varName,
+			varName <- 'xml'
+			--variableExp <- s.filter.condition.source.referredVariable
+		)
+
+		
+	do {
+
+		'InPattern rule'.println();
+		oce2.arguments <- self.IfExp2OperatorCallExp(s.filter.thenExpression);
+	}
+}
+
+lazy rule IfExp2OperatorCallExp {
+	from
+		s : ATL!OclExpression
+	to
+		oce : ATL!OperatorCallExp (
+			operationName <- 'and',
+			source <- oce2,
+			arguments <- oce3
+		),
+		oce2 : ATL!OperatorCallExp (
+			operationName <- 'or',
+			source <- oce4
+			--arguments <- s.thenExpression	
+			
+		),
+		oce4 : ATL!OperatorCallExp (
+			operationName <- 'not',
+			source <- noace
+		),
+		oce3 : ATL!OperatorCallExp (
+			operationName <- 'or',
+			source <- noace2,
+			arguments <- be2
+		),
+		noace : ATL!NavigationOrAttributeCallExp (
+			name <- s.condition.name,--'long'
+			--name <- 'name',
+			source <- ve
+		),
+		noace2 : ATL!NavigationOrAttributeCallExp (
+			name <- s.condition.name,--'long'
+			--name <- 'name',
+			source <- ve2
+		),
+		ve : ATL!VariableExp (
+			referredVariable <- vd
+		),
+		ve2 : ATL!VariableExp (
+			referredVariable <- vd
+		),
+		be : ATL!BooleanExp (
+			booleanSymbol <- true
+		),
+		be2 : ATL!BooleanExp (
+			booleanSymbol <- false
+		),
+		be3 : ATL!BooleanExp (
+			booleanSymbol <- true
+		),
+		vd : ATL!VariableDeclaration (
+			id <- 'id',
+			--varName <- s.refImmediateComposite().refImmediateComposite().elements->first().varName,
+			varName <- 'xml'
+			--variableExp <- s.thenExpression.thenExpression.source.source.source.source.referredVariable
+			
+		)
+	do{
+		'generatebooleanExp'.println();
+		if (s.thenExpression.oclIsTypeOf(ATL!IfExp)){
+			oce2.arguments <- self.IfExp2OperatorCallExp(s.thenExpression);
+		}else{
+			oce2.arguments <- s.thenExpression;
+		}
+		
+		
+	}
+}
+
+
+
+--not (A or B) -> not A and not B
+rule MoveNotInwards {
+	from
+		s: ATL!MatchedRule
+		(
+		if not s.inPattern.filter.oclIsUndefined() then
+			if s.inPattern.filter.oclIsTypeOf(ATL!OperatorCallExp) then
+				if not s.inPattern.filter.source.oclIsUndefined() then
+					if s.inPattern.filter.source.oclIsTypeOf(ATL!OperatorCallExp) then
+						if not s.inPattern.filter.source.source.oclIsUndefined() then
+							if s.inPattern.filter.source.source.oclIsTypeOf(ATL!OperatorCallExp) then
+								if s.inPattern.filter.source.source.operationName = 'not' then
+									if not s.inPattern.filter.source.source.source.oclIsUndefined() then
+										if s.inPattern.filter.source.source.source.oclIsTypeOf(ATL!OperatorCallExp) then
+											if s.inPattern.filter.source.source.source.operationName = 'or' then
+												if not s.inPattern.filter.source.source.source.source.oclIsUndefined() then
+													if s.inPattern.filter.source.source.source.source.oclIsTypeOf(ATL!NavigationOrAttributeCallExp) then
+														if not s.inPattern.filter.source.source.source.arguments->first().oclIsUndefined() then
+															if s.inPattern.filter.source.source.source.arguments->first().oclIsTypeOf(ATL!NavigationOrAttributeCallExp) then
+																true
+															else
+																false
+															endif
+														else
+															false
+														endif
+													else
+														false
+													endif
+												else
+													false
+												endif
+											else
+												false
+											endif
+										else
+											false
+										endif
+									else
+										false
+									endif
+								else
+									false
+								endif
+							else
+								false
+							endif
+						else
+							false
+						endif
+					else
+						false
+					endif
+				else
+					false
+				endif
+			else
+				false
+			endif
+		else
+			false
+		endif
+		)
+	to
+		t : ATL!MatchedRule(
+			--inPattern <- ip_i_c2,
+			inPattern <- s.inPattern,
+			children <- s.children,
+			superRule <- s.superRule,
+			isAbstract <- s.isAbstract,
+			isRefining <- s.isRefining,
+			isNoDefault <- s.isNoDefault,
+			"module" <- s."module",
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter,
+			outPattern <- s.outPattern,
+			actionBlock <- s.actionBlock,
+			variables <- s.variables,
+			name <- s.name	
+		),
+		--remember to fill all the attributes!
+		ip_i_c2 : ATL!InPattern (
+			elements <- Sequence{ipe_i_c2},
+			"rule" <- s.inPattern."rule",
+			filter <- oce
+		),
+		ipe_i_c2 : ATL!SimpleInPatternElement (
+			varName <- s.inPattern.elements->first().varName,--'xml'
+			type <- ipet_i_c2,
+			variableExp <- s.inPattern.elements->first().variableExp
+		),
+		ipet_i_c2 : ATL!OclModelElement (
+			name <- s.inPattern.elements->first().type.name,--'MultipleChoiceElement'
+			model <- om
+		),
+		om : ATL!OclModel (
+			name <- 'KM3'	--Source MM name
+		),
+		--filter
+		oce : ATL!OperatorCallExp (
+			operationName <- 'and',
+			source <- oce2,
+			arguments <- oce3
+		),
+		oce2 : ATL!OperatorCallExp (
+			operationName <- 'or',
+			source <- oce4,
+			arguments <- be
+		),
+		oce4 : ATL!OperatorCallExp (
+			operationName <- 'and',
+			source <- oce5,
+			arguments <- oce6
+		),
+		oce5 : ATL!OperatorCallExp (
+			operationName <- 'not',
+			source <- noace
+		),
+		oce6 : ATL!OperatorCallExp (
+			operationName <- 'not',
+			source <- noace2
+		),
+		oce3 : ATL!OperatorCallExp (
+			operationName <- 'or',
+			source <- oce7,
+			arguments <- be2
+		),
+		oce7 : ATL!OperatorCallExp (
+			operationName <- 'or',
+			source <- noace3,
+			arguments <- noace4
+		),
+		noace : ATL!NavigationOrAttributeCallExp (
+			name <- s.inPattern.filter.source.source.source.source.name,--'optional'
+			source <- ve
+		),
+		noace2 : ATL!NavigationOrAttributeCallExp (
+			name <- s.inPattern.filter.source.source.source.arguments->first().name,--'long'
+			source <- ve2
+		),
+		noace3 : ATL!NavigationOrAttributeCallExp (
+			name <- s.inPattern.filter.source.source.source.source.name,--'optional'
+			source <- ve3
+		),
+		noace4 : ATL!NavigationOrAttributeCallExp (
+			name <- s.inPattern.filter.source.source.source.arguments->first().name,--'long'
+			source <- ve4
+		),
+		ve : ATL!VariableExp (
+			referredVariable <- ipe_i_c2
+		),
+		ve2 : ATL!VariableExp (
+			referredVariable <- ipe_i_c2
+		),
+		ve3 : ATL!VariableExp (
+			referredVariable <- ipe_i_c2
+		),
+		ve4 : ATL!VariableExp (
+			referredVariable <- ipe_i_c2
+		),
+		be : ATL!BooleanExp (
+			booleanSymbol <- true
+		),
+		be2 : ATL!BooleanExp (
+			booleanSymbol <- false
+		)
+	do{
+		'ok5'.println();
+		
+	}
+}
+
+rule Case1A {
+	from
+		s: ATL!InPattern(
+		if not s.filter.oclIsUndefined() then
+			if s.filter.oclIsTypeOf(ATL!OperatorCallExp) then
+				if s.filter.operationName = 'implies' then
+					if not s.filter.source.oclIsUndefined() then
+						if s.filter.source.oclIsKindOf(ATL!OclExpression) then
+							if not s.filter.arguments.oclIsUndefined() then 
+								if s.filter.arguments->first().oclIsKindOf(ATL!OclExpression) then		
+									true
+								else
+									false
+								endif
+							else
+								false
+							endif
+						else
+							false
+						endif
+					else
+						false
+					endif
+				else
+					false
+				endif
+			else
+				false
+			endif
+		else
+			false
+		endif
+		)
+	to
+		t: ATL!InPattern(
+			elements <- s.elements,
+			filter <- oce
+		),
+		oce : ATL!OperatorCallExp(
+			operationName <- 'or',
+			arguments <- s.filter.arguments,
+			source <- oce2
+			
+		),
+		oce2 : ATL!OperatorCallExp(
+			operationName <- 'not',
+			source <- s.filter.source--
+		)
+		do{
+			'Case1A'.println();
+			oce2.source <- self.OCE2OCE(s.filter.source);
+		}
+}
+
+lazy rule OCE2OCE {
+	from
+		s: ATL!OperatorCallExp
+	to
+		t: ATL!OperatorCallExp(
+			operationName <- 'or',
+			arguments <- s.arguments,
+			source <- oce2
+		),
+		oce2 : ATL!OperatorCallExp(
+			operationName <- 'not',
+			source <- s.source
+		)
+		do{
+			'lazy OCE2OCE'.println();
+			if(s.source.oclIsTypeOf(ATL!OperatorCallExp)){
+				t.source <- self.OCE2OCE(s.source);
+			}
+		}
+}
+
+rule Case1C {
+	from
+		s: ATL!InPattern(
+		if not s.filter.oclIsUndefined() then
+			if s.filter.oclIsTypeOf(ATL!OperatorCallExp) then
+				if s.filter.operationName = 'xor' then
+					if not s.filter.source.oclIsUndefined() then
+						if s.filter.source.oclIsKindOf(ATL!OclExpression) then
+							if not s.filter.arguments.oclIsUndefined() then 
+								if s.filter.arguments->first().oclIsKindOf(ATL!OclExpression) then		
+									true
+								else
+									false
+								endif
+							else
+								false
+							endif
+						else
+							false
+						endif
+					else
+						false
+					endif
+				else
+					false
+				endif
+			else
+				false
+			endif
+		else
+			false
+		endif
+		)
+	to
+		t: ATL!InPattern(
+			elements <- s.elements,
+			filter <- oce
+		),
+		oce : ATL!OperatorCallExp(
+			operationName <- 'and',
+			source <- oce3,
+			arguments <- oce2
+		),
+		oce2 : ATL!OperatorCallExp(
+			operationName <- 'or',
+			source <- s.filter.source,--
+			arguments <- s.filter.arguments
+		),
+		oce3 : ATL!OperatorCallExp(
+			operationName <- 'or',
+			source <- oce4,
+			arguments <- oce5
+		),
+		oce4 : ATL!OperatorCallExp(
+			operationName <- 'not'
+			--source <- s.filter.source--
+		),
+		oce5 : ATL!OperatorCallExp(
+			operationName <- 'not'
+			--source <- s.filter.arguments->first()
+		)
+		do{
+			'Case1c'.println();
+					
+			oce2.source <- self.OCE2OCE_1c(s.filter.source);
+			oce4.source <- self.OCE2OCE_1c_bis(s.filter.source);
+			--oce4.source <- self.generateNOACESource(s.filter);
+			oce5.source <- self.generateNOACEArguments(s.filter);
+		}
+}
+
+lazy rule OCE2OCE_1c {
+	from
+		s: ATL!OperatorCallExp
+	to
+		oce : ATL!OperatorCallExp(
+			operationName <- 'and',
+			arguments <- oce2,
+			source <- oce3
+			
+		),
+		oce2 : ATL!OperatorCallExp(
+			operationName <- 'or',
+			source <- s.source,--
+			arguments <- s.arguments
+		),
+		oce3 : ATL!OperatorCallExp(
+			operationName <- 'or',
+			source <- oce4,
+			arguments <- oce5
+		),
+		oce4 : ATL!OperatorCallExp(
+			operationName <- 'not'
+			--source <- s.source--
+		),
+		oce5 : ATL!OperatorCallExp(
+			operationName <- 'not'
+			--source <- s.arguments->first()
+		)
+		do{
+			'lazy OCE2OCE_1c'.println();
+			if(s.source.oclIsTypeOf(ATL!OperatorCallExp)){
+				'ok'.println();
+				oce2.source <- self.OCE2OCE_1c(s);
+				oce4.source <- self.OCE2OCE_1c(s);
+			}
+			oce4.source <- self.generateNOACESource(s);
+			oce5.source <- self.generateNOACEArguments(s);
+			
+		}
+}
+
+lazy rule OCE2OCE_1c_bis {
+	from
+		s: ATL!OperatorCallExp
+	to
+		oce : ATL!OperatorCallExp(
+			operationName <- 'and',
+			arguments <- oce2,
+			source <- oce3
+			
+		),
+		oce2 : ATL!OperatorCallExp(
+			operationName <- 'or'
+--			source <- s.source,--
+--			arguments <- s.arguments
+		),
+		oce3 : ATL!OperatorCallExp(
+			operationName <- 'or',
+			source <- oce4,
+			arguments <- oce5
+		),
+		oce4 : ATL!OperatorCallExp(
+			operationName <- 'not'
+			--source <- s.source--
+		),
+		oce5 : ATL!OperatorCallExp(
+			operationName <- 'not'
+			--source <- s.arguments->first()
+		)
+		do{
+			'lazy OCE2OCE_1c'.println();
+			if(s.source.oclIsTypeOf(ATL!OperatorCallExp)){
+				'ok'.println();
+				oce2.source <- self.OCE2OCE_1c(s);
+				oce4.source <- self.OCE2OCE_1c(s);
+			}
+			oce4.source <- self.generateNOACESource(s);
+			oce5.source <- self.generateNOACEArguments(s);
+			oce2.source <- self.generateNOACESource(s);
+			oce2.arguments <- self.generateNOACEArguments(s);
+			
+		}
+}
+
+lazy rule generateNOACESource{
+	from
+		s: ATL!OperatorCallExp
+	to
+		t: ATL!NavigationOrAttributeCallExp(
+			--name <- 'optional',
+			name <- s.source.name,
+			source <- ve
+		),
+		ve : ATL!VariableExp (
+			referredVariable <- vd
+		),
+		vd : ATL!VariableDeclaration (
+			id <- 'id',
+			--varName <- s.refImmediateComposite().refImmediateComposite().elements->first().varName,
+			varName <- 'xml'
+			--variableExp <- s.filter.condition.source.referredVariable
+		)
+		do{
+			'generateNOACESource'.println();
+		}
+}
+lazy rule generateNOACEArguments{
+	from
+		s: ATL!OperatorCallExp
+	to
+		t: ATL!NavigationOrAttributeCallExp(
+			--name <- 'optional',
+			name <- s.arguments->first().name,
+			source <- ve
+		),
+		ve : ATL!VariableExp (
+			referredVariable <- vd
+		),
+		vd : ATL!VariableDeclaration (
+			id <- 'id',
+			--varName <- s.refImmediateComposite().refImmediateComposite().elements->first().varName,
+			varName <- 'xml'
+			--variableExp <- s.filter.condition.source.referredVariable
+		)
+		do{
+			'generateNOACEArguments'.println();
+		}
+}
+
+--A or (B and C) == (A or B) and (A or C)
+rule Case3A {
+	from
+		s: ATL!MatchedRule
+		(
+		if not s.inPattern.filter.oclIsUndefined() then
+			if s.inPattern.filter.oclIsTypeOf(ATL!OperatorCallExp) then
+				if s.inPattern.filter.operationName='or' then
+					if not s.inPattern.filter.source.oclIsUndefined() then
+						if s.inPattern.filter.source.oclIsKindOf(ATL!OclExpression) then
+							if not s.inPattern.filter.arguments.oclIsUndefined() then
+								if s.inPattern.filter.arguments->first().oclIsTypeOf(ATL!OperatorCallExp) then
+									if s.inPattern.filter.arguments->first().operationName='and' then
+										true
+									else
+										false
+									endif
+								else
+									false
+								endif
+							else
+								false
+							endif
+						else
+							false
+						endif
+					else
+						false
+					endif
+				else
+					false
+				endif
+			else
+				false
+			endif
+		else
+			false
+		endif
+		)
+	to
+		t : ATL!MatchedRule(
+			--inPattern <- ip_i_c2,
+			inPattern <- s.inPattern,
+			children <- s.children,
+			superRule <- s.superRule,
+			isAbstract <- s.isAbstract,
+			isRefining <- s.isRefining,
+			isNoDefault <- s.isNoDefault,
+			"module" <- s."module",
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter,
+			outPattern <- s.outPattern,
+			actionBlock <- s.actionBlock,
+			variables <- s.variables,
+			name <- s.name	
+		),
+		--remember to fill all the attributes!
+		ip_i_c2 : ATL!InPattern (
+			elements <- Sequence{ipe_i_c2},
+			"rule" <- s.inPattern."rule",
+			filter <- oce
+		),
+		ipe_i_c2 : ATL!SimpleInPatternElement (
+			varName <- s.inPattern.elements->first().varName,--'xml'
+			type <- ipet_i_c2,
+			variableExp <- s.inPattern.elements->first().variableExp
+		),
+		ipet_i_c2 : ATL!OclModelElement (
+			name <- s.inPattern.elements->first().type.name,
+			model <- om
+		),
+		om : ATL!OclModel (
+			name <- self.sourceMM
+		),
+		--filter
+		oce : ATL!OperatorCallExp (
+			operationName <- 'and',
+			source <- oce2,
+			arguments <- oce3
+		),
+		oce2 : ATL!OperatorCallExp (
+			operationName <- 'or',
+			source <- s.inPattern.filter.source,
+			arguments <- s.inPattern.filter.arguments->first().source
+		),
+		
+		oce3 : ATL!OperatorCallExp (
+			operationName <- 'or',
+			
+			arguments <- s.inPattern.filter.arguments->first().arguments->first()
+		)
+	do{
+		'Case 3a'.println();
+		oce3.source <- self.generateNOACE_3A(s.inPattern.filter);
+	}
+}
+
+lazy rule generateNOACE_3A{
+	from
+		s: ATL!OperatorCallExp
+	to
+		t: ATL!NavigationOrAttributeCallExp(
+			--name <- 'optional',
+			name <- s.source.name,
+			source <- ve
+		),
+		ve : ATL!VariableExp (
+			referredVariable <- vd
+		),
+		vd : ATL!VariableDeclaration (
+			id <- 'id',
+			--varName <- s.refImmediateComposite().refImmediateComposite().elements->first().varName,
+			varName <- 'xml'
+			--variableExp <- s.filter.condition.source.referredVariable
+		)
+		do{
+			'generateNOACE_3A'.println();
+		}
+}

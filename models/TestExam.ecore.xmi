@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="ASCII"?>
+<exam:Exam xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:exam="http://gts.inf.um.es/tests/ExamXML" xsi:schemaLocation="http://gts.inf.um.es/tests/ExamXML ../metamodels/ExamXML.ecore">
+  <elements xsi:type="exam:OpenElement" question="First question"/>
+  <elements xsi:type="exam:OpenElement" question="Second question"/>
+  <elements xsi:type="exam:OpenElement" question="Third question"/>
+  <elements xsi:type="exam:MultipleChoiceElement" question="Fourth question"/>
+  <elements xsi:type="exam:MultipleChoiceElement" question="Fifth question"/>
+</exam:Exam>

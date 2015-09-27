@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<diff:DiffModel xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:diff="http://www.eclipse.org/emf/compare/diff/1.1" left="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore"
+    right="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol17.ecore">
+  <complexChanges impact="resolvable" changeType="Reference_to_identifier">
+    <atomicChanges xsi:type="diff:RemoveModelElement">
+      <rightParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol17.ecore#//View"/>
+      <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//View/controller"/>
+    </atomicChanges>
+    <atomicChanges xsi:type="diff:AddModelElement">
+      <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//View"/>
+      <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol17.ecore#//View/controller"/>
+    </atomicChanges>
+    <atomicChanges xsi:type="diff:AddModelElement">
+      <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//Controller"/>
+      <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol17.ecore#//Controller/controller"/>
+    </atomicChanges>
+  </complexChanges>
+</diff:DiffModel>

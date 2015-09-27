@@ -1,0 +1,69 @@
+--Change in the MM: OpenElement Abstract=true
+--ExamXMLEvol11.ecore
+--result19.emfdiff
+
+module UpdateisAbstract; -- Module Template
+create OUT : ATL refining IN : ATL, diff : DIFF;
+
+helper def : DiffSize : Integer = 6;
+helper def : MOFSize : Integer = 5;	
+
+--returns class which attribute abstract has been changed to true
+helper def : getUpdateAttributes : Sequence(String) =
+	--Sequence{'OpenElement'};
+	DIFF!UpdateAttribute.allInstances()->select(e|not e.oclIsUndefined())->asSequence()->select(e|e.attribute.toString().substring(self.MOFSize, e.attribute.toString().size())='abstract')->collect(e|e.leftElement.toString().substring(self.DiffSize, e.leftElement.toString().size()));
+
+helper def : deleteRule (param : Sequence(ATL!MatchedRule)) : Sequence(ATL!MatchedRule) =
+	
+	let elements : Sequence(String) = self.getUpdateAttributes
+	in elements->iterate(p; y : Sequence(ATL!MatchedRule) = param |
+		if self.contains(p, param) then
+			self.deleteRule(y->excluding(param->at(self.index(p, param))))
+		else
+			y
+		endif
+	)
+	;
+	helper def : index (param1 : String, param2 : Sequence(ATL!MatchedRule)) : Integer =
+	param2->iterate(p; y : Integer = 0 |
+		if p.inPattern.elements->first().type.name = param1 then
+			param2->indexOf(p)
+		else
+			y
+		endif
+	)
+	;
+helper def : contains (param1 : String, param2 : Sequence(ATL!MatchedRule)) : Boolean =
+	param2->iterate(p; y : Boolean = false |
+		if p.inPattern.elements->first().type.name = param1 then
+			true
+		else
+			if y = true then
+				true
+			else
+				false
+			endif
+		endif
+	)
+	;
+	
+rule Module {
+	from
+		s : ATL!Module
+	to
+		t : ATL!Module (
+			name <- s.name,
+			libraries <- s.libraries,
+			isRefining <- s.isRefining,
+			inModels <- s.inModels,
+			outModels <- s.outModels,
+			--delete rules which source is abstract
+			elements <- self.deleteRule(s.elements)
+		)
+		do{
+			self.getUpdateAttributes->toString().println();
+		}
+}
+
+
+

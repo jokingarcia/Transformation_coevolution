@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Difference:DiffModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Difference="http://www.eclipse.org/Difference">
+  <ownedElements xsi:type="Difference:ModelElementChangeLeftTarget">
+  		<rightParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#/"/>
+     	<leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//Multiple"/>
+  </ownedElements>
+   <ownedElements xsi:type="Difference:ModelElementChangeLeftTarget">
+  		<rightParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#/"/>
+     	<leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//No"/>
+  </ownedElements>
+  <ownedElements xsi:type="Difference:ModelElementChangeLeftTarget">
+  		<rightParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#/"/>
+     	<leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//Fuera"/>
+  </ownedElements>
+  <ownedElements xsi:type="Difference:ModelElementChangeRightTarget">
+  		<leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoice"/>
+     	<rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoice/selectionWay"/>
+  </ownedElements>
+   <ownedElements xsi:type="Difference:ModelElementChangeRightTarget">
+  		<leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoice"/>
+     	<rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoice/numberOfChoices"/>
+  </ownedElements>
+  <ownedElements xsi:type="Difference:ModelElementChangeRightTarget">
+  		<leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoiceController"/>
+     	<rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoiceController/selectionWay"/>
+  </ownedElements>
+   <ownedElements xsi:type="Difference:ModelElementChangeRightTarget">
+  		<leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoiceController"/>
+     	<rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoiceController/numberOfChoices"/>
+  </ownedElements>
+  <ownedElements xsi:type="Difference:ModelElementChangeRightTarget">
+  		<leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoiceView"/>
+     	<rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoiceView/selectionWay"/>
+  </ownedElements>
+   <ownedElements xsi:type="Difference:ModelElementChangeRightTarget">
+  		<leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoiceView"/>
+     	<rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoiceView/numberOfChoices"/>
+  </ownedElements>
+  <ownedElements xsi:type="Difference:ReferenceChangeLeftTarget">
+  		<reference href="http://www.eclipse.org/emf/2002/Ecore#//EClass/eSuperTypes"/>
+         <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoice"/>
+          <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoice"/>
+          <leftTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//Multiple"/>
+  </ownedElements>
+  <ownedElements xsi:type="Difference:ReferenceChangeLeftTarget">
+  		<reference href="http://www.eclipse.org/emf/2002/Ecore#//EClass/eSuperTypes"/>
+         <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoiceController"/>
+          <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoiceController"/>
+          <leftTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//Multiple"/>
+  </ownedElements>
+</Difference:DiffModel>

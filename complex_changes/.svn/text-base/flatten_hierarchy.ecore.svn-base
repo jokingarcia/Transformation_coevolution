@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Difference:DiffModel xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:Difference="http://www.eclipse.org/Difference">
+  <coarseChanges changeType="Flatten_hierarchy">
+    <atomicChanges xsi:type="Difference:RemoveReferenceValue">
+      <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol9.ecore#//Exam"/>
+      <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol8.ecore#//Exam"/>
+      <leftRemovedTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol8.ecore#//Observable"/>
+    </atomicChanges>
+    <atomicChanges xsi:type="Difference:RemoveReferenceValue">
+      <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol9.ecore#//ExamItem"/>
+      <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol8.ecore#//ExamItem"/>
+      <leftRemovedTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol8.ecore#//Observable"/>
+    </atomicChanges>
+    <atomicChanges xsi:type="Difference:ModelElementChangeRightTarget">
+      <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol8.ecore#//Exam"/>
+      <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol9.ecore#//Exam/question"/>
+    </atomicChanges>
+    <atomicChanges xsi:type="Difference:ModelElementChangeRightTarget">
+      <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol8.ecore#//ExamItem"/>
+      <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol9.ecore#//ExamItem/question"/>
+    </atomicChanges>
+    <atomicChanges xsi:type="Difference:ModelElementChangeLeftTarget">
+      <rightParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol9.ecore#/"/>
+      <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol8.ecore#//Observable"/>
+    </atomicChanges>
+  </coarseChanges>
+</Difference:DiffModel>

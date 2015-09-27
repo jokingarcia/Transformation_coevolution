@@ -1,0 +1,2099 @@
+--resultfinalexam.ecore
+module HOTfinal; -- Module Template
+create OUT : ATL from IN : ATL, diff : DIFF, amw : AMW;
+
+------------------------------------------------------------------------------------------
+-----------------------HELPERS----------------------------------------------------------
+---------------------------------------------------------------------------------------
+helper def : sourceMM : String = 'ExamXML';
+helper def : targetMM : String = 'AssistantMVC';
+helper def : DiffSize : Integer = 6;
+--------------ADD METACLASS-----------------------
+--Retrieve added metaclasses
+helper def : idAddMetaclass : Integer = 1;
+helper def : getAddedMetaclasses : Sequence(String) =
+	DIFF!AddModelElement.allInstances()->select(e|not e.oclIsUndefined())->asSequence()->select(e|e.leftParent.toString().substring(self.DiffSize,e.leftParent.toString().size()) = self.sourceMM)->collect(e|e.rightElement.toString());
+
+-----------------ADD METAPROPERTY------------------
+--helper def : varNameMatch(param : Sequence(ATL!OutPatternElement)) : Boolean =
+--	param->select(e|e.varName='mvc').size()>0;
+--Retrieve added metaproperties
+helper def : idAddMetaproperty : Integer = 1;
+helper def : getAddedMetaproperties : Sequence(String) =
+	DIFF!AddModelElement.allInstances()->select(e|not e.oclIsUndefined())->asSequence()->select(e|e.leftParent.toString().substring(self.DiffSize,e.leftParent.toString().size()) <> self.sourceMM)->collect(e|e.rightElement.toString());
+
+helper def : getEqualSimmilarity (param : String) : String =
+	AMW!Equal.allInstances()->asSequence()->
+		select(p | p.name.startsWith(param) and p.similarity > 0.5)->first().name.split('_')->first();
+
+--Returns true if exists new metaproperty
+helper def : existAddModelElement : Boolean =
+	not DIFF!AddModelElement.allInstances()->asSequence()->select(e|e.leftParent.toString().substring(self.DiffSize,e.leftParent.toString().size()) <> self.sourceMM)->first().oclIsUndefined();
+
+helper context Integer def : reduce() : Integer =
+	if self > thisModule.getAddedMetaproperties.size() then
+		self - thisModule.getAddedMetaproperties.size()
+	else
+		self
+	endif;
+
+---------------UPDATE METACLASS-----------------------
+helper def : idUpdateMetaclass : Integer = 1;
+
+--Retrieve right UpdateAttributes
+helper def : getUpdateAttributesRight : Sequence(String) =
+	DIFF!UpdateAttribute.allInstances()->asSequence()->collect(e|e.rightElement.toString());	
+
+--Retrieve left UpdateAttributes
+helper def : getUpdateAttributesLeft : Sequence(String) =
+	DIFF!UpdateAttribute.allInstances()->asSequence()->collect(e|e.leftElement.toString());
+
+---------------ELIMINATE METAPROPERTY---------------------
+--Retrieve RemoveModelElements
+--helper def : getRemoveModelElements : Sequence(String) =
+--	DIFF!RemoveModelElement.allInstances()->asSequence()->collect(e|e.rightParent.toString());
+helper def : getRemoveModelElements : Sequence(String) =
+	Sequence{'diff!question','diff!value'};
+
+helper def : delete (param : Sequence(ATL!Binding)) : Sequence(ATL!Binding) =
+	--elements = Sequence{'question','value'}
+	let elements : Sequence(String) = self.getRemoveModelElements->collect(e|e.substring(6,e.size()))
+	in elements->iterate(p; y : Sequence(ATL!Binding) = param |
+		if self.contains(p, param) then
+		 	y->excluding(param->at(self.index(p, param)))
+		else
+			y
+		endif
+	)
+	;
+helper def : contains (param1 : String, param2 : Sequence(ATL!Binding)) : Boolean =
+	param2->iterate(p; y : Boolean = false |
+		if p.propertyName = param1 then
+			true
+		else
+			if y = true then
+				true
+			else
+				false
+			endif
+		endif
+	)
+	;
+helper def : index (param1 : String, param2 : Sequence(ATL!Binding)) : Integer =
+	param2->iterate(p; y : Integer = 0 |
+		if p.propertyName = param1 then
+			param2->indexOf(p)
+		else
+			y
+		endif
+	)
+	;
+helper def : filtermatch (param : String) : Boolean =
+	let elements : Sequence(String) = self.getRemoveModelElements->collect(e|e.substring(6,e.size()))
+	in elements->iterate(p; y : Boolean = false |
+		if p = param
+		then
+			true
+		else
+			if y = true
+			then
+				true
+			else
+				false
+			endif
+		endif
+	);
+--------------------------------------------------------------------------------
+--------------------RULES------------------------------------------------------
+-------------------------------------------------------------------------------
+rule Module {
+	from
+		s : ATL!Module
+
+	to
+		t : ATL!Module (
+			name <- s.name,
+			libraries <- s.libraries,
+			isRefining <- s.isRefining,
+			inModels <- s.inModels,
+			outModels <- s.outModels,
+			elements <- Sequence{s.elements}
+		)
+		
+		do {
+			
+			for (iterator in thisModule.getAddedMetaclasses) {
+				t.elements <- t.elements->append(thisModule.MatchedRule2MatchedRule(t.elements));
+				self.idAddMetaclass <- self.idAddMetaclass + 1;
+			}				
+		}
+		
+}
+
+-----------------ADD METACLASS---------------------------------------
+lazy rule MatchedRule2MatchedRule {
+	from
+		s : ATL!MatchedRule
+	
+	to
+		mr : ATL!MatchedRule (
+			name <- thisModule.getAddedMetaclasses->at(self.idAddMetaclass).substring(self.DiffSize,thisModule.getAddedMetaclasses->at(self.idAddMetaclass).size()),
+			isAbstract <- false,
+			isRefining <- false,
+			inPattern <- ip_i_c2,
+			outPattern <- op_i_c2,
+			commentsBefore <- Set {'--NEW RULE'}
+		),
+		ip_i_c2 : ATL!InPattern (
+			elements <- Sequence{ipe_i_c2}
+		),
+		ipe_i_c2 : ATL!SimpleInPatternElement (
+			varName <- 's',
+			type <- ipet_i_c2
+		),
+		ipet_i_c2 : ATL!OclModelElement (
+			name <- thisModule.getAddedMetaclasses->at(self.idAddMetaclass).substring(self.DiffSize,thisModule.getAddedMetaclasses->at(self.idAddMetaclass).size()),
+			model <- om
+		),
+		om : ATL!OclModel (
+			--Source MM name
+			name <- 'ExamXML'	
+		),
+		op_i_c2 : ATL!OutPattern (
+			elements <- Sequence{ope_i_c2}	
+		),
+		ope_i_c2 : ATL!SimpleOutPatternElement(
+			varName <- 't',
+			type <- opet_i_c2,
+			bindings <- Sequence{b}
+		),
+		opet_i_c2 : ATL!OclModelElement (
+			--
+			name <- 'Exam',
+			model <- om2
+		),
+		om2 : ATL!OclModel (
+			--Target MM name
+			name <- 'AssistantMVC'	
+		),
+		b : ATL!Binding (
+			commentsBefore <- Set {'--write the bindings'},
+			propertyName <- '--target',
+			value <- arg
+		),
+		arg : ATL!NavigationOrAttributeCallExp (
+			name <- 'source',
+			source <- ve
+		),
+		ve : ATL!VariableExp (
+			referredVariable <- ipe_i_c2	
+		)
+	
+}
+
+----------------------ADD METAPROPERTY------------------------------------------
+--rule MatchedRule {
+--	from
+--		s : ATL!MatchedRule
+--	to
+--		t : ATL!MatchedRule(
+--			inPattern <- s.inPattern,
+--			children <- s.children,
+--			superRule <- s.superRule,
+--			isAbstract <- s.isAbstract,
+--			isRefining <- s.isRefining,
+--			isNoDefault <- s.isNoDefault,
+--			"module" <- s."module",
+--			location <- s.location,
+--			commentsBefore <- s.commentsBefore,
+--			commentsAfter <- s.commentsAfter,
+--			outPattern <- s.outPattern,
+--			actionBlock <- s.actionBlock,
+--			variables <- s.variables,
+--			name <- s.name
+--		)
+--}
+
+
+
+
+rule SimpleOutPatternElement1 {
+	from
+		s : ATL!SimpleOutPatternElement
+		(
+			--hardcoded
+			if s.varName = 'model' then
+				true
+			else
+				false
+			endif
+		)
+	to
+		t : ATL!SimpleOutPatternElement(
+			type <- s.type,
+			varName <- s.varName,
+			--bindings <- Sequence{s.bindings}
+			--Delete metaproperty
+			bindings <- self.delete(s.bindings)
+			
+		)
+	do {
+			
+			for (iterator in thisModule.getAddedMetaproperties) {
+				t.bindings <- t.bindings->append(thisModule.Binding2Binding(t.bindings));
+				self.idAddMetaproperty <- self.idAddMetaproperty + 1;
+			}				
+		}
+}
+--Heuristic: map the attribute to an attribute with the same name and type. If there is not
+--use 'target'
+lazy rule Binding2Binding {
+	from
+		s : ATL!Binding
+		(
+			--hardcoded
+			if s.propertyName = 'model' then
+				true
+			else
+				false
+			endif
+		)
+	
+	to
+		b : ATL!Binding ( --original
+			--propertyName <- 'target',
+			propertyName <- thisModule.getEqualSimmilarity('question'),
+			value <- arg,
+			commentsBefore <- Set {'--write target'}
+		),
+		--xml.optional
+		ipe_i_c2 : ATL!SimpleInPatternElement (
+			--hardcoded
+			varName <- 'xml',
+			type <- ipet_i_c2
+		),
+		ipet_i_c2 : ATL!OclModelElement (
+			name <- thisModule.getAddedMetaproperties->at(self.idAddMetaproperty.reduce()).substring(self.DiffSize,thisModule.getAddedMetaproperties->at(self.idAddMetaproperty.reduce()).size()),
+			model <- om
+		),
+		om : ATL!OclModel (
+			--Source MM name
+			name <- 'ExamXML'	
+		),
+		arg : ATL!NavigationOrAttributeCallExp (
+			name <- thisModule.getAddedMetaproperties->at(self.idAddMetaproperty.reduce()).substring(self.DiffSize,thisModule.getAddedMetaproperties->at(self.idAddMetaproperty.reduce()).size()),
+			source <- ve
+		),
+		ve : ATL!VariableExp (
+			referredVariable <- ipe_i_c2	
+		)
+		
+}
+
+------------------UPDATE METACLASS--------------------------------------------
+rule OclModelElement1 {
+	from
+		s : ATL!OclModelElement
+		(
+			if self.getUpdateAttributesLeft->includes('diff!'+s.name) then
+				true
+			else
+				false
+			endif
+		)
+	to
+		t : ATL!OclModelElement(
+			model <- s.model,	
+			name <- self.getUpdateAttributesRight->at(thisModule.idUpdateMetaclass).substring(self.DiffSize,self.getUpdateAttributesRight->at(thisModule.idUpdateMetaclass).size()),
+			definitions <- s.definitions,
+			oclExpression <- s.oclExpression,
+			operation <- s.operation,
+			mapType2 <- s.mapType2,
+			attribute <- s.attribute,
+			mapType <- s.mapType,
+			collectionTypes <- s.collectionTypes,
+			tupleTypeAttribute <- s.tupleTypeAttribute,
+			variableDeclaration <- s.variableDeclaration,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+		do {
+			--self.idUpdateMetaclass.toString().println();
+			self.idUpdateMetaclass <- self.idUpdateMetaclass + 1;
+						
+		}
+}
+
+
+rule OclModelElement2 {
+	from
+		s : ATL!OclModelElement(
+			if not self.getUpdateAttributesLeft->includes('diff!'+s.name) then
+				true
+			else
+				false
+			endif
+		)
+	to
+		t : ATL!OclModelElement(
+			model <- s.model,
+			name <- s.name,
+			definitions <- s.definitions,
+			oclExpression <- s.oclExpression,
+			operation <- s.operation,
+			mapType2 <- s.mapType2,
+			attribute <- s.attribute,
+			mapType <- s.mapType,
+			collectionTypes <- s.collectionTypes,
+			tupleTypeAttribute <- s.tupleTypeAttribute,
+			variableDeclaration <- s.variableDeclaration,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+		
+}
+
+------------------ELIMINATE METAPROPERTY-----------------------------------
+--code in Add metaproperty
+
+rule InPattern {
+	from
+		s : ATL!InPattern (
+			if not s.filter.oclIsUndefined() then
+				if self.filtermatch(s.filter.source.name) then
+				--if s.filter.source.name = 'question' or s.filter.source.name = 'value' then
+					true
+				else
+					false
+				endif
+			else
+				false
+			endif
+		)
+	to
+		t : ATL!InPattern (
+			elements <- s.elements,
+			"rule" <- s."rule"
+		)
+		do{
+			'InPattern'.println();
+		}
+		
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--rule LocatedElement {
+--	from
+--		s : ATL!LocatedElement
+--	to
+--		t : ATL!LocatedElement(
+--			location <- s.location,
+--			commentsBefore <- s.commentsBefore,
+--			commentsAfter <- s.commentsAfter
+--			
+--		)
+--}
+--rule Unit {
+--	from
+--		s : ATL!Unit
+--	to
+--		t : ATL!Unit(
+--			libraries <- s.libraries,
+--			name <- s.name,
+--			location <- s.location,
+--			commentsBefore <- s.commentsBefore,
+--			commentsAfter <- s.commentsAfter
+--		)
+--}
+rule Library {
+	from
+		s : ATL!Library
+	to
+		t : ATL!Library(
+			helpers <- s.helpers,
+			libraries <- s.libraries,
+			name <- s.name,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+			
+		)
+}
+rule Query {
+	from
+		s : ATL!Query
+	to
+		t : ATL!Query(
+			body <- s.body,
+			helpers <- s.helpers,
+			libraries <- s.libraries,
+			name <- s.name,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}
+--rule Module {
+--	from
+--		s : ATL!Module(
+--			
+--		if not self.existRemoveModelElement then
+--			true
+--		else
+--			false
+--		endif
+--		)
+--	to
+--		t : ATL!Module(
+--			isRefining <- s.isRefining,
+--			inModels <- s.inModels,
+--			outModels <- s.outModels,
+--			elements <- s.elements,
+--			libraries <- s.libraries,
+--			name <- s.name,
+--			location <- s.location,
+--			commentsBefore <- s.commentsBefore,
+--			commentsAfter <- s.commentsAfter
+--		)
+--}
+--rule ModuleElement {
+--	from
+--		s : ATL!ModuleElement
+--	to
+--		t : ATL!ModuleElement(
+--			"module" <- s."module"
+--			
+--		)
+--}
+rule Helper {
+	from
+		s : ATL!Helper
+	to
+		t : ATL!Helper(
+			"query" <- s."query",
+			"library" <- s."library",
+			definition <- s.definition,
+			"module" <- s."module",
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}
+--rule Rule {
+--	from
+--		s : ATL!Rule
+--	to
+--		t : ATL!Rule(
+--			outPattern <- s.outPattern,
+--			actionBlock <- s.actionBlock,
+--			variables <- s.variables,
+--			name <- s.name
+--		)
+--}
+rule MatchedRule {
+	from
+		s : ATL!MatchedRule
+	to
+		t : ATL!MatchedRule(
+			inPattern <- s.inPattern,
+			children <- s.children,
+			superRule <- s.superRule,
+			isAbstract <- s.isAbstract,
+			isRefining <- s.isRefining,
+			isNoDefault <- s.isNoDefault,
+			"module" <- s."module",
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter,
+			outPattern <- s.outPattern,
+			actionBlock <- s.actionBlock,
+			variables <- s.variables,
+			name <- s.name
+		)
+}
+rule LazyMatchedRule {
+	from
+		s : ATL!LazyMatchedRule
+	to
+		t : ATL!LazyMatchedRule(
+			isUnique <- s.isUnique
+			
+		)
+}
+rule CalledRule {
+	from
+		s : ATL!CalledRule
+	to
+		t : ATL!CalledRule(
+			parameters <- s.parameters,
+			isEntrypoint <- s.isEntrypoint,
+			isEndpoint <- s.isEndpoint,
+			"module" <- s."module",
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter,
+			outPattern <- s.outPattern,
+			actionBlock <- s.actionBlock,
+			variables <- s.variables,
+			name <- s.name
+		)
+}
+--modified
+rule InPattern2 {
+	from
+		s : ATL!InPattern
+		(
+		if s.filter.oclIsUndefined() then
+				true
+			else
+				if not self.filtermatch(s.filter.source.name) then
+				--if s.filter.source.name = 'question' or s.filter.source.name = 'value' then
+					true
+				else
+					false
+				endif
+			endif
+			
+		
+		)
+	to
+		t : ATL!InPattern(
+			elements <- s.elements,
+			"rule" <- s."rule",
+			filter <- s.filter
+		)
+}
+rule OutPattern {
+	from
+		s : ATL!OutPattern
+	to
+		t : ATL!OutPattern(
+			"rule" <- s."rule",
+			elements <- s.elements
+		)
+}
+--rule PatternElement {
+--	from
+--		s : ATL!PatternElement
+--	to
+--		t : ATL!PatternElement(
+--			id <- s.id,
+--			varName <- s.varName,
+--			type <- s.type,
+--			initExpression <- s.initExpression,
+--			letExp <- s.letExp,
+--			baseExp <- s.baseExp,
+--			variableExp <- s.variableExp
+--			
+--		)
+--}
+--rule InPatternElement {
+--	from
+--		s : ATL!InPatternElement
+--	to
+--		t : ATL!InPatternElement(
+--			"mapsTo" <- s."mapsTo",
+--			inPattern <- s.inPattern,
+--			models <- s.models,
+--			id <- s.id,
+--			varName <- s.varName,
+--			type <- s.type,
+--			initExpression <- s.initExpression,
+--			letExp <- s.letExp,
+--			baseExp <- s.baseExp,
+--			variableExp <- s.variableExp
+--		)
+--}
+rule SimpleInPatternElement {
+	from
+		s : ATL!SimpleInPatternElement
+	to
+		t : ATL!SimpleInPatternElement(
+			"mapsTo" <- s."mapsTo",
+			inPattern <- s.inPattern,
+			models <- s.models,
+			id <- s.id,
+			varName <- s.varName,
+			type <- s.type,
+			initExpression <- s.initExpression,
+			letExp <- s.letExp,
+			baseExp <- s.baseExp,
+			variableExp <- s.variableExp
+			
+		)
+}
+--rule OutPatternElement {
+--	from
+--		s : ATL!OutPatternElement
+--	to
+--		t : ATL!OutPatternElement(
+--			outPattern <- s.outPattern,
+--			sourceElement <- s.sourceElement,
+--			bindings <- s.bindings,
+--			model <- s.model,
+--			id <- s.id,
+--			varName <- s.varName,
+--			type <- s.type,
+--			initExpression <- s.initExpression,
+--			letExp <- s.letExp,
+--			baseExp <- s.baseExp,
+--			variableExp <- s.variableExp
+--		)
+--}
+--modified
+rule SimpleOutPatternElement {
+	from
+		s : ATL!SimpleOutPatternElement
+		(
+			if s.varName <> 'model' then
+				true
+			else
+				false
+			endif
+		)
+	to
+		t : ATL!SimpleOutPatternElement(
+			reverseBindings <- s.reverseBindings,
+			outPattern <- s.outPattern,
+			sourceElement <- s.sourceElement,
+			bindings <- s.bindings,
+			model <- s.model,
+			id <- s.id,
+			varName <- s.varName,
+			type <- s.type,
+			initExpression <- s.initExpression,
+			letExp <- s.letExp,
+			baseExp <- s.baseExp,
+			variableExp <- s.variableExp
+		)
+		
+}
+rule ForEachOutPatternElement {
+	from
+		s : ATL!ForEachOutPatternElement
+	to
+		t : ATL!ForEachOutPatternElement(
+			collection <- s.collection,
+			iterator <- s.iterator,
+			outPattern <- s.outPattern,
+			sourceElement <- s.sourceElement,
+			bindings <- s.bindings,
+			model <- s.model
+		)
+}
+rule Binding {
+	from
+		s : ATL!Binding
+	to
+		t : ATL!Binding(
+			value <- s.value,
+			--commented
+			--outPatternElement <- s.outPatternElement,
+			propertyName <- s.propertyName
+		)
+}
+rule RuleVariableDeclaration {
+	from
+		s : ATL!RuleVariableDeclaration
+	to
+		t : ATL!RuleVariableDeclaration(
+			"rule" <- s."rule"
+			
+		)
+}
+rule LibraryRef {
+	from
+		s : ATL!LibraryRef
+	to
+		t : ATL!LibraryRef(
+			unit <- s.unit,
+			name <- s.name
+		)
+}
+rule ActionBlock {
+	from
+		s : ATL!ActionBlock
+	to
+		t : ATL!ActionBlock(
+			"rule" <- s."rule",
+			statements <- s.statements
+			
+		)
+}
+rule Statement {
+	from
+		s : ATL!Statement
+	to
+		t : ATL!Statement(
+			
+			
+		)
+}
+rule ExpressionStat {
+	from
+		s : ATL!ExpressionStat
+	to
+		t : ATL!ExpressionStat(
+			expression <- s.expression
+			
+		)
+}
+rule BindingStat {
+	from
+		s : ATL!BindingStat
+	to
+		t : ATL!BindingStat(
+			source <- s.source,
+			propertyName <- s.propertyName,
+			value <- s.value
+		)
+}
+rule IfStat {
+	from
+		s : ATL!IfStat
+	to
+		t : ATL!IfStat(
+			condition <- s.condition,
+			thenStatements <- s.thenStatements,
+			elseStatements <- s.elseStatements
+		)
+}
+rule ForStat {
+	from
+		s : ATL!ForStat
+	to
+		t : ATL!ForStat(
+			iterator <- s.iterator,
+			collection <- s.collection,
+			statements <- s.statements
+		)
+}
+
+--rule OclExpression {
+--	from
+--		s : ATL!OclExpression
+--	to
+--		t : ATL!OclExpression(
+--			type <- s.type,
+--			ifExp3 <- s.ifExp3,
+--			appliedProperty <- s.appliedProperty,
+--			collection <- s.collection,
+--			letExp <- s.letExp,
+--			loopExp <- s.loopExp,
+--			parentOperation <- s.parentOperation,
+--			initializedVariable <- s.initializedVariable,
+--			ifExp2 <- s.ifExp2,
+--			owningOperation <- s.owningOperation,
+--			ifExp1 <- s.ifExp1,
+--			owningAttribute <- s.owningAttribute
+--		)
+--}
+rule VariableExp {
+	from
+		s : ATL!VariableExp
+	to
+		t : ATL!VariableExp(
+			referredVariable <- s.referredVariable,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+			
+		)
+}
+rule SuperExp {
+	from
+		s : ATL!SuperExp
+	to
+		t : ATL!SuperExp(
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+			
+		)
+}
+--rule PrimitiveExp {
+--	from
+--		s : ATL!PrimitiveExp
+--	to
+--		t : ATL!PrimitiveExp(
+--			
+--			
+--		)
+--}
+
+rule StringExp {
+	from
+		s : ATL!StringExp
+	to
+		t : ATL!StringExp(
+			stringSymbol <- s.stringSymbol,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}
+rule BooleanExp {
+	from
+		s : ATL!BooleanExp
+	to
+		t : ATL!BooleanExp(
+			booleanSymbol <- s.booleanSymbol,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}
+--rule NumericExp {
+--	from
+--		s : ATL!NumericExp
+--	to
+--		t : ATL!NumericExp(
+--			
+--			
+--		)
+--}
+rule RealExp {
+	from
+		s : ATL!RealExp
+	to
+		t : ATL!RealExp(
+			realSymbol <- s.realSymbol,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}
+
+rule IntegerExp {
+	from
+		s : ATL!IntegerExp
+	to
+		t : ATL!IntegerExp(
+			integerSymbol <- s.integerSymbol,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+			
+		)
+}
+--rule CollectionExp {
+--	from
+--		s : ATL!CollectionExp
+--	to
+--		t : ATL!CollectionExp(
+--			
+--		)
+--}
+rule BagExp {
+	from
+		s : ATL!BagExp
+	to
+		t : ATL!BagExp(
+			elements <- s.elements,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+			
+		)
+}
+rule OrderedSetExp {
+	from
+		s : ATL!OrderedSetExp
+	to
+		t : ATL!OrderedSetExp(
+			elements <- s.elements,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+			
+		)
+}
+
+rule SequenceExp {
+	from
+		s : ATL!SequenceExp
+	to
+		t : ATL!SequenceExp(
+			elements <- s.elements,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+			
+		)
+}
+rule SetExp {
+	from
+		s : ATL!SetExp
+	to
+		t : ATL!SetExp(
+			elements <- s.elements,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+			
+		)
+}
+rule TupleExp {
+	from
+		s : ATL!TupleExp
+	to
+		t : ATL!TupleExp(
+			tuplePart <- s.tuplePart,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}
+rule TuplePart {
+	from
+		s : ATL!TuplePart
+	to
+		t : ATL!TuplePart(
+			tuple <- s.tuple,
+			id <- s.id,
+			varName <- s.varName,
+			type <- s.type,
+			initExpression <- s.initExpression,
+			letExp <- s.letExp,
+			baseExp <- s.baseExp,
+			variableExp <- s.variableExp
+		)
+}
+
+rule MapExp {
+	from
+		s : ATL!MapExp
+	to
+		t : ATL!MapExp(
+			elements <- s.elements,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}
+rule MapElement {
+	from
+		s : ATL!MapElement
+	to
+		t : ATL!MapElement(
+			map <- s.map,
+			key <- s.key,
+			value <- s.value,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}
+rule EnumLiteralExp {
+	from
+		s : ATL!EnumLiteralExp
+	to
+		t : ATL!EnumLiteralExp(
+			name <- s.name,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}
+rule OclUndefinedExp {
+	from
+		s : ATL!OclUndefinedExp
+	to
+		t : ATL!OclUndefinedExp(
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+			
+		)
+}
+
+--rule PropertyCallExp {
+--	from
+--		s : ATL!PropertyCallExp
+--	to
+--		t : ATL!PropertyCallExp(
+--			type <- s.type,
+--			ifExp3 <- s.ifExp3,
+--			appliedProperty <- s.appliedProperty,
+--			collection <- s.collection,
+--			letExp <- s.letExp,
+--			loopExp <- s.loopExp,
+--			parentOperation <- s.parentOperation,
+--			initializedVariable <- s.initializedVariable,
+--			ifExp2 <- s.ifExp2,
+--			owningOperation <- s.owningOperation,
+--			ifExp1 <- s.ifExp1,
+--			owningAttribute <- s.owningAttribute,
+--			location <- s.location,
+--			commentsBefore <- s.commentsBefore,
+--			commentsAfter <- s.commentsAfter
+--			
+--		)
+--}
+rule NavigationOrAttributeCallExp {
+	from
+		s : ATL!NavigationOrAttributeCallExp
+	to
+		t : ATL!NavigationOrAttributeCallExp(
+			name <- s.name,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}
+rule OperationCallExp {
+	from
+		s : ATL!OperationCallExp
+	to
+		t : ATL!OperationCallExp(
+			arguments <- s.arguments,
+			operationName <- s.operationName,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}
+rule OperatorCallExp {
+	from
+		s : ATL!OperatorCallExp
+	to
+		t : ATL!OperatorCallExp(
+			
+			
+		)
+}
+
+rule CollectionOperationCallExp {
+	from
+		s : ATL!CollectionOperationCallExp
+	to
+		t : ATL!CollectionOperationCallExp(
+			
+			
+		)
+}
+--rule LoopExp {
+--	from
+--		s : ATL!LoopExp
+--	to
+--		t : ATL!LoopExp(
+--			body <- s.body,
+--			iterators <- s.iterators,
+--			ifExp3 <- s.ifExp3,
+--			appliedProperty <- s.appliedProperty,
+--			collection <- s.collection,
+--			letExp <- s.letExp,
+--			loopExp <- s.loopExp,
+--			parentOperation <- s.parentOperation,
+--			initializedVariable <- s.initializedVariable,
+--			ifExp2 <- s.ifExp2,
+--			owningOperation <- s.owningOperation,
+--			ifExp1 <- s.ifExp1,
+--			owningAttribute <- s.owningAttribute,
+--			location <- s.location,
+--			commentsBefore <- s.commentsBefore,
+--			commentsAfter <- s.commentsAfter
+--		)
+--}
+rule IterateExp {
+	from
+		s : ATL!IterateExp
+	to
+		t : ATL!IterateExp(
+			result <- s.result,
+			body <- s.body,
+			iterators <- s.iterators,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}
+rule IteratorExp {
+	from
+		s : ATL!IteratorExp
+	to
+		t : ATL!IteratorExp(
+			name <- s.name,
+			body <- s.body,
+			iterators <- s.iterators,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}
+
+rule LetExp {
+	from
+		s : ATL!LetExp
+	to
+		t : ATL!LetExp(
+			variable <- s.variable,
+			in_ <- s.in_,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}
+rule IfExp {
+	from
+		s : ATL!IfExp
+	to
+		t : ATL!IfExp(
+			thenExpression <- s.thenExpression,
+			condition <- s.condition,
+			elseExpression <- s.elseExpression,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}
+--rule VariableDeclaration {
+--	from
+--		s : ATL!VariableDeclaration
+--	to
+--		t : ATL!VariableDeclaration(
+--			id <- s.id,
+--			varName <- s.varName,
+--			type <- s.type,
+--			initExpression <- s.initExpression,
+--			letExp <- s.letExp,
+--			baseExp <- s.baseExp,
+--			variableExp <- s.variableExp
+--		)
+--}
+rule Iterator {
+	from
+		s : ATL!Iterator
+	to
+		t : ATL!Iterator(
+			loopExp <- s.loopExp,
+			id <- s.id,
+			varName <- s.varName,
+			type <- s.type,
+			initExpression <- s.initExpression,
+			letExp <- s.letExp,
+			baseExp <- s.baseExp,
+			variableExp <- s.variableExp
+		)
+}
+
+rule Parameter {
+	from
+		s : ATL!Parameter
+	to
+		t : ATL!Parameter(
+			operation <- s.operation,
+			id <- s.id,
+			varName <- s.varName,
+			type <- s.type,
+			initExpression <- s.initExpression,
+			letExp <- s.letExp,
+			baseExp <- s.baseExp,
+			variableExp <- s.variableExp
+		)
+}
+rule CollectionType {
+	from
+		s : ATL!CollectionType
+	to
+		t : ATL!CollectionType(
+			elementType <- s.elementType,
+			name <- s.name,
+			definitions <- s.definitions,
+			oclExpression <- s.oclExpression,
+			operation <- s.operation,
+			mapType2 <- s.mapType2,
+			attribute <- s.attribute,
+			mapType <- s.mapType,
+			collectionTypes <- s.collectionTypes,
+			tupleTypeAttribute <- s.tupleTypeAttribute,
+			variableDeclaration <- s.variableDeclaration,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}
+
+--rule OclType {
+--	from
+--		s : ATL!OclType
+--	to
+--		t : ATL!OclType(
+--			name <- s.name,
+--			definitions <- s.definitions,
+--			oclExpression <- s.oclExpression,
+--			operation <- s.operation,
+--			mapType2 <- s.mapType2,
+--			attribute <- s.attribute,
+--			mapType <- s.mapType,
+--			collectionTypes <- s.collectionTypes,
+--			tupleTypeAttribute <- s.tupleTypeAttribute,
+--			variableDeclaration <- s.variableDeclaration,
+--			type <- s.type,
+--			ifExp3 <- s.ifExp3,
+--			appliedProperty <- s.appliedProperty,
+--			collection <- s.collection,
+--			letExp <- s.letExp,
+--			loopExp <- s.loopExp,
+--			parentOperation <- s.parentOperation,
+--			initializedVariable <- s.initializedVariable,
+--			ifExp2 <- s.ifExp2,
+--			owningOperation <- s.owningOperation,
+--			ifExp1 <- s.ifExp1,
+--			owningAttribute <- s.owningAttribute,
+--			location <- s.location,
+--			commentsBefore <- s.commentsBefore,
+--			commentsAfter <- s.commentsAfter
+--		)
+--}
+rule Primitive {
+	from
+		s : ATL!Primitive
+	to
+		t : ATL!Primitive(
+			name <- s.name,
+			definitions <- s.definitions,
+			oclExpression <- s.oclExpression,
+			operation <- s.operation,
+			mapType2 <- s.mapType2,
+			attribute <- s.attribute,
+			mapType <- s.mapType,
+			collectionTypes <- s.collectionTypes,
+			tupleTypeAttribute <- s.tupleTypeAttribute,
+			variableDeclaration <- s.variableDeclaration,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+			
+		)
+}
+
+rule StringType {
+	from
+		s : ATL!StringType
+	to
+		t : ATL!StringType(
+			name <- s.name,
+			definitions <- s.definitions,
+			oclExpression <- s.oclExpression,
+			operation <- s.operation,
+			mapType2 <- s.mapType2,
+			attribute <- s.attribute,
+			mapType <- s.mapType,
+			collectionTypes <- s.collectionTypes,
+			tupleTypeAttribute <- s.tupleTypeAttribute,
+			variableDeclaration <- s.variableDeclaration,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+			
+		)
+}
+rule BooleanType {
+	from
+		s : ATL!BooleanType
+	to
+		t : ATL!BoooleanType(
+			name <- s.name,
+			definitions <- s.definitions,
+			oclExpression <- s.oclExpression,
+			operation <- s.operation,
+			mapType2 <- s.mapType2,
+			attribute <- s.attribute,
+			mapType <- s.mapType,
+			collectionTypes <- s.collectionTypes,
+			tupleTypeAttribute <- s.tupleTypeAttribute,
+			variableDeclaration <- s.variableDeclaration,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+			
+		)
+}
+rule NumericType {
+	from
+		s : ATL!NumericType
+	to
+		t : ATL!NumericType(
+			name <- s.name,
+			definitions <- s.definitions,
+			oclExpression <- s.oclExpression,
+			operation <- s.operation,
+			mapType2 <- s.mapType2,
+			attribute <- s.attribute,
+			mapType <- s.mapType,
+			collectionTypes <- s.collectionTypes,
+			tupleTypeAttribute <- s.tupleTypeAttribute,
+			variableDeclaration <- s.variableDeclaration,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+			
+		)
+}
+rule IntegerType {
+	from
+		s : ATL!IntegerType
+	to
+		t : ATL!IntegerType(
+			name <- s.name,
+			definitions <- s.definitions,
+			oclExpression <- s.oclExpression,
+			operation <- s.operation,
+			mapType2 <- s.mapType2,
+			attribute <- s.attribute,
+			mapType <- s.mapType,
+			collectionTypes <- s.collectionTypes,
+			tupleTypeAttribute <- s.tupleTypeAttribute,
+			variableDeclaration <- s.variableDeclaration,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+			
+		)
+}
+
+rule RealType {
+	from
+		s : ATL!RealType
+	to
+		t : ATL!RealType(
+			name <- s.name,
+			definitions <- s.definitions,
+			oclExpression <- s.oclExpression,
+			operation <- s.operation,
+			mapType2 <- s.mapType2,
+			attribute <- s.attribute,
+			mapType <- s.mapType,
+			collectionTypes <- s.collectionTypes,
+			tupleTypeAttribute <- s.tupleTypeAttribute,
+			variableDeclaration <- s.variableDeclaration,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+			
+		)
+}
+rule BagType {
+	from
+		s : ATL!BagType
+	to
+		t : ATL!BagType(
+			elementType <- s.elementType,
+			name <- s.name,
+			definitions <- s.definitions,
+			oclExpression <- s.oclExpression,
+			operation <- s.operation,
+			mapType2 <- s.mapType2,
+			attribute <- s.attribute,
+			mapType <- s.mapType,
+			collectionTypes <- s.collectionTypes,
+			tupleTypeAttribute <- s.tupleTypeAttribute,
+			variableDeclaration <- s.variableDeclaration,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+			
+		)
+}
+rule OrderedSetType {
+	from
+		s : ATL!OrderedSetType
+	to
+		t : ATL!OrderedSetType(
+			elementType <- s.elementType,
+			name <- s.name,
+			definitions <- s.definitions,
+			oclExpression <- s.oclExpression,
+			operation <- s.operation,
+			mapType2 <- s.mapType2,
+			attribute <- s.attribute,
+			mapType <- s.mapType,
+			collectionTypes <- s.collectionTypes,
+			tupleTypeAttribute <- s.tupleTypeAttribute,
+			variableDeclaration <- s.variableDeclaration,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+			
+		)
+}
+rule SequenceType {
+	from
+		s : ATL!SequenceType
+	to
+		t : ATL!SequenceType(
+			elementType <- s.elementType,
+			name <- s.name,
+			definitions <- s.definitions,
+			oclExpression <- s.oclExpression,
+			operation <- s.operation,
+			mapType2 <- s.mapType2,
+			attribute <- s.attribute,
+			mapType <- s.mapType,
+			collectionTypes <- s.collectionTypes,
+			tupleTypeAttribute <- s.tupleTypeAttribute,
+			variableDeclaration <- s.variableDeclaration,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+			
+		)
+}
+
+rule SetType {
+	from
+		s : ATL!SetType
+	to
+		t : ATL!SetType(
+			elementType <- s.elementType,
+			name <- s.name,
+			definitions <- s.definitions,
+			oclExpression <- s.oclExpression,
+			operation <- s.operation,
+			mapType2 <- s.mapType2,
+			attribute <- s.attribute,
+			mapType <- s.mapType,
+			collectionTypes <- s.collectionTypes,
+			tupleTypeAttribute <- s.tupleTypeAttribute,
+			variableDeclaration <- s.variableDeclaration,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+			
+		)
+}
+rule OclAnyType {
+	from
+		s : ATL!OclAnyType
+	to
+		t : ATL!OclAnyType(
+				name <- s.name,
+			definitions <- s.definitions,
+			oclExpression <- s.oclExpression,
+			operation <- s.operation,
+			mapType2 <- s.mapType2,
+			attribute <- s.attribute,
+			mapType <- s.mapType,
+			collectionTypes <- s.collectionTypes,
+			tupleTypeAttribute <- s.tupleTypeAttribute,
+			variableDeclaration <- s.variableDeclaration,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+			
+		)
+}
+rule "TupleType" {
+	from
+		s : ATL!"TupleType"
+	to
+		t : ATL!"TupleType"(
+			attributes <- s.attributes,
+			name <- s.name,
+			definitions <- s.definitions,
+			oclExpression <- s.oclExpression,
+			operation <- s.operation,
+			mapType2 <- s.mapType2,
+			attribute <- s.attribute,
+			mapType <- s.mapType,
+			collectionTypes <- s.collectionTypes,
+			tupleTypeAttribute <- s.tupleTypeAttribute,
+			variableDeclaration <- s.variableDeclaration,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}
+rule TupleTypeAttribute {
+	from
+		s : ATL!TupleTypeAttribute
+	to
+		t : ATL!TupleTypeAttribute(
+			type <- s.type,
+			tupleType <- s.tupleType,
+			name <- s.name,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}
+
+--commented
+--rule OclModelElement {
+--	from
+--		s : ATL!OclModelElement
+--	to
+--		t : ATL!OclModelElement(
+--			model <- s.model,
+--			name <- s.name,
+--			definitions <- s.definitions,
+--			oclExpression <- s.oclExpression,
+--			operation <- s.operation,
+--			mapType2 <- s.mapType2,
+--			attribute <- s.attribute,
+--			mapType <- s.mapType,
+--			collectionTypes <- s.collectionTypes,
+--			tupleTypeAttribute <- s.tupleTypeAttribute,
+--			variableDeclaration <- s.variableDeclaration,
+--			type <- s.type,
+--			ifExp3 <- s.ifExp3,
+--			appliedProperty <- s.appliedProperty,
+--			collection <- s.collection,
+--			letExp <- s.letExp,
+--			loopExp <- s.loopExp,
+--			parentOperation <- s.parentOperation,
+--			initializedVariable <- s.initializedVariable,
+--			ifExp2 <- s.ifExp2,
+--			owningOperation <- s.owningOperation,
+--			ifExp1 <- s.ifExp1,
+--			owningAttribute <- s.owningAttribute,
+--			location <- s.location,
+--			commentsBefore <- s.commentsBefore,
+--			commentsAfter <- s.commentsAfter
+--		)
+--}
+rule MapType {
+	from
+		s : ATL!MapType
+	to
+		t : ATL!MapType(
+			valueType <- s.valueType,
+			keyType <- s.keyType,
+			name <- s.name,
+			definitions <- s.definitions,
+			oclExpression <- s.oclExpression,
+			operation <- s.operation,
+			mapType2 <- s.mapType2,
+			attribute <- s.attribute,
+			mapType <- s.mapType,
+			collectionTypes <- s.collectionTypes,
+			tupleTypeAttribute <- s.tupleTypeAttribute,
+			variableDeclaration <- s.variableDeclaration,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}
+rule OclFeatureDefinition {
+	from
+		s : ATL!OclFeatureDefinition
+	to
+		t : ATL!OclFeatureDefinition(
+			feature <- s.feature,
+			context_ <- s.context_,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}
+rule OclContextDefinition {
+	from
+		s : ATL!OclContextDefinition
+	to
+		t : ATL!OclContextDefinition(
+			definition <- s.definition,
+			context_ <- s.context_,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}
+--rule OclFeature {
+--	from
+--		s : ATL!OclFeature
+--	to
+--		t : ATL!OclFeature(
+--			definition <- s.definition,
+--			location <- s.location,
+--			commentsBefore <- s.commentsBefore,
+--			commentsAfter <- s.commentsAfter
+--		)
+--}
+rule Attribute {
+	from
+		s : ATL!Attribute
+	to
+		t : ATL!Attribute(
+			name <- s.name,
+			initExpression <- s.initExpression,
+			type <- s.type,
+			definition <- s.definition,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}
+rule Operation {
+	from
+		s : ATL!Operation
+	to
+		t : ATL!Operation(
+			name <- s.name,
+			parameters <- s.parameters,
+			returnType <- s.returnType,
+			body <- s.body,
+			definition <- s.definition,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}
+rule OclModel {
+	from
+		s : ATL!OclModel
+	to
+		t : ATL!OclModel(
+			name <- s.name,
+			metamodel <- s.metamodel,
+			elements <- s.elements,
+			model <- s.model,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+}

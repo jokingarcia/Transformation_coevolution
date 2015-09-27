@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="Cp1252"?>
+<diff:ModelInputSnapshot xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:diff="http://www.eclipse.org/emf/compare/diff/1.1" xmlns:match="http://www.eclipse.org/emf/compare/match/1.1" date="2012-05-30T16:32:02.874+0200">
+  <diff left="platform:/resource/Examination_Assistant/metamodels/ExamXMLEvol24.ecore" right="platform:/resource/Examination_Assistant/metamodels/ExamXMLEvol25.ecore">
+    <ownedElements xsi:type="diff:DiffGroup">
+      <subDiffElements xsi:type="diff:DiffGroup">
+        <subDiffElements xsi:type="diff:DiffGroup">
+          <subDiffElements xsi:type="diff:UpdateAttribute">
+            <attribute href="http://www.eclipse.org/emf/2002/Ecore#//ENamedElement/name"/>
+            <leftElement href="platform:/resource/Examination_Assistant/metamodels/ExamXMLEvol24.ecore#//OpenElement"/>
+            <rightElement href="platform:/resource/Examination_Assistant/metamodels/ExamXMLEvol25.ecore#//OpenElement_2"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:RemoveModelElement">
+            <rightParent href="platform:/resource/Examination_Assistant/metamodels/ExamXMLEvol25.ecore#//OpenElement_2"/>
+            <leftElement href="platform:/resource/Examination_Assistant/metamodels/ExamXMLEvol24.ecore#//OpenElement/attr1"/>
+          </subDiffElements>
+          <leftParent href="platform:/resource/Examination_Assistant/metamodels/ExamXMLEvol24.ecore#//OpenElement"/>
+        </subDiffElements>
+        <subDiffElements xsi:type="diff:DiffGroup">
+          <subDiffElements xsi:type="diff:RemoveModelElement">
+            <rightParent href="platform:/resource/Examination_Assistant/metamodels/ExamXMLEvol25.ecore#//ExamElement"/>
+            <leftElement href="platform:/resource/Examination_Assistant/metamodels/ExamXMLEvol24.ecore#//ExamElement/optional"/>
+          </subDiffElements>
+          <leftParent href="platform:/resource/Examination_Assistant/metamodels/ExamXMLEvol24.ecore#//ExamElement"/>
+        </subDiffElements>
+        <subDiffElements xsi:type="diff:AddModelElement">
+          <leftParent href="platform:/resource/Examination_Assistant/metamodels/ExamXMLEvol24.ecore#/"/>
+          <rightElement href="platform:/resource/Examination_Assistant/metamodels/ExamXMLEvol25.ecore#//OpenElement_1"/>
+        </subDiffElements>
+        <leftParent href="platform:/resource/Examination_Assistant/metamodels/ExamXMLEvol24.ecore#/"/>
+      </subDiffElements>
+    </ownedElements>
+  </diff>
+ 
+</diff:ModelInputSnapshot>

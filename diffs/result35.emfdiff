@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="Cp1252"?>
+<diff:ModelInputSnapshot xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:diff="http://www.eclipse.org/emf/compare/diff/1.1" xmlns:match="http://www.eclipse.org/emf/compare/match/1.1" date="2012-03-02T16:04:31.271+0100">
+  <diff left="platform:/resource/examination-assistant/final/AssistantMVC.ecore" right="platform:/resource/examination-assistant/final/AssistantMVCFinal.ecore">
+    <ownedElements xsi:type="diff:DiffGroup">
+      <subDiffElements xsi:type="diff:DiffGroup">
+        <subDiffElements xsi:type="diff:DiffGroup">
+          <subDiffElements xsi:type="diff:DiffGroup">
+            <subDiffElements xsi:type="diff:UpdateAttribute">
+              <attribute href="http://www.eclipse.org/emf/2002/Ecore#//ENamedElement/name"/>
+              <leftElement href="platform:/resource/examination-assistant/final/AssistantMVC.ecore#//View/fontName"/>
+              <rightElement href="platform:/resource/examination-assistant/final/AssistantMVCFinal.ecore#//View/name"/>
+            </subDiffElements>
+            <leftParent href="platform:/resource/examination-assistant/final/AssistantMVC.ecore#//View/fontName"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:DiffGroup">
+            <subDiffElements xsi:type="diff:UpdateAttribute">
+              <attribute href="http://www.eclipse.org/emf/2002/Ecore#//ENamedElement/name"/>
+              <leftElement href="platform:/resource/examination-assistant/final/AssistantMVC.ecore#//View/fontColor"/>
+              <rightElement href="platform:/resource/examination-assistant/final/AssistantMVCFinal.ecore#//View/color"/>
+            </subDiffElements>
+            <leftParent href="platform:/resource/examination-assistant/final/AssistantMVC.ecore#//View/fontColor"/>
+          </subDiffElements>
+          <leftParent href="platform:/resource/examination-assistant/final/AssistantMVC.ecore#//View"/>
+        </subDiffElements>
+        <subDiffElements xsi:type="diff:DiffGroup">
+          <subDiffElements xsi:type="diff:UpdateAttribute">
+            <attribute href="http://www.eclipse.org/emf/2002/Ecore#//EClass/abstract"/>
+            <leftElement href="platform:/resource/examination-assistant/final/AssistantMVC.ecore#//ExamItemController"/>
+            <rightElement href="platform:/resource/examination-assistant/final/AssistantMVCFinal.ecore#//ExamItemController"/>
+          </subDiffElements>
+          <leftParent href="platform:/resource/examination-assistant/final/AssistantMVC.ecore#//ExamItemController"/>
+        </subDiffElements>
+        <subDiffElements xsi:type="diff:RemoveModelElement">
+          <rightParent href="platform:/resource/examination-assistant/final/AssistantMVCFinal.ecore#/"/>
+          <leftElement href="platform:/resource/examination-assistant/final/AssistantMVC.ecore#//OpenView"/>
+        </subDiffElements>
+        <subDiffElements xsi:type="diff:RemoveModelElement">
+          <rightParent href="platform:/resource/examination-assistant/final/AssistantMVCFinal.ecore#/"/>
+          <leftElement href="platform:/resource/examination-assistant/final/AssistantMVC.ecore#//MultipleChoiceView"/>
+        </subDiffElements>
+        <leftParent href="platform:/resource/examination-assistant/final/AssistantMVC.ecore#/"/>
+      </subDiffElements>
+    </ownedElements>
+  </diff>
+ 
+</diff:ModelInputSnapshot>

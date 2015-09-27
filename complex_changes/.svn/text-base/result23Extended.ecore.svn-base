@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xmi:XMI xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:diff="http://www.eclipse.org/emf/compare/diff/1.1">
+  <diff:DiffModel left="platform:/resource/examination-assistant/metamodels/ExamXMLEvol15.ecore"
+      right="platform:/resource/examination-assistant/metamodels/ExamXMLEvol16.ecore">
+    <complexChanges impact="resolvable" changeType="Inheritance_to_composition">
+      <atomicChanges xsi:type="diff:RemoveReferenceValue">
+        <reference href="http://www.eclipse.org/emf/2002/Ecore#//EClass/eSuperTypes"/>
+        <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol16.ecore#//OpenElement"/>
+        <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol15.ecore#//OpenElement"/>
+        <leftRemovedTarget href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol15.ecore#//ExamElement"/>
+        <rightRemovedTarget href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol16.ecore#//ExamElement"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diff:AddModelElement">
+        <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol15.ecore#//OpenElement"/>
+        <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol16.ecore#//OpenElement/examElement"/>
+      </atomicChanges>
+    </complexChanges>
+  </diff:DiffModel>
+  <diff:RemoveModelElement>
+    <rightParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol16.ecore#//OpenElement"/>
+    <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol15.ecore#//OpenElement/@eGenericSuperTypes.0"/>
+  </diff:RemoveModelElement>
+</xmi:XMI>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://gts.inf.um.es/test/assistant_mvc">
+  <mvc:Exam>
+    <examItems xsi:type="mvc:OpenController"/>
+  </mvc:Exam>
+  <mvc:OpenView fontName="Times" fontColor="Red" controller="/0/@examItems.0"/>
+  <mvc:Open/>
+</xmi:XMI>

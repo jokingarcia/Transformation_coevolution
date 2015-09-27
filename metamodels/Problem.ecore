@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xmi:XMI xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore">
+  <ecore:EPackage name="Problem" nsURI="http://www.eclipse.org/Problem" nsPrefix="problem">
+    <eClassifiers xsi:type="ecore:EClass" name="Problem">
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="severity" ordered="false"
+          unique="false" eType="#/0/Severity"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="location" eType="#/2/String"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="description" eType="#/2/String"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EEnum" name="Severity">
+      <eLiterals name="default"/>
+      <eLiterals name="error" value="1" literal="error"/>
+      <eLiterals name="warning" value="2" literal="warning"/>
+      <eLiterals name="critic" value="3" literal="critic"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="Verification">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="problems" upperBound="-1"
+          eType="#/0/Problem"/>
+    </eClassifiers>
+  </ecore:EPackage>
+  <ecore:EPackage name="OCL" nsURI="http://www.eclipse.org/gmt/2005/OCL" nsPrefix="ocl"/>
+  <ecore:EPackage name="PrimitiveTypes" nsURI="http://www.eclipse.org/gmt/2005/PrimitiveTypes"
+      nsPrefix="ptypes">
+    <eClassifiers xsi:type="ecore:EDataType" name="Boolean"/>
+    <eClassifiers xsi:type="ecore:EDataType" name="Double"/>
+    <eClassifiers xsi:type="ecore:EDataType" name="Integer"/>
+    <eClassifiers xsi:type="ecore:EDataType" name="String"/>
+  </ecore:EPackage>
+</xmi:XMI>

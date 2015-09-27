@@ -1,0 +1,202 @@
+
+module Reference_to_identifier_adaptation; -- Module Template
+create OUT : ATL refining IN : ATL, diff : DIFF, Assistant : Ecore;
+
+helper def : DiffSize : Integer = 6;
+helper def : MOFSize : Integer = 5;	
+helper def : sourceMM : String = 'ExamXML';
+helper def : targetMM : String = 'AssistantMVC';
+helper def : targetMMPrefix : String = 'Assistant!';
+helper def : idAddedBinding : Integer = 1;
+
+helper def : getRemoveModelElementLeft : String =
+	DIFF!ComplexChange.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.changeType=#Reference_to_identifier)
+	->collect(e|e.atomicChanges)->first()->select(e|e.oclIsTypeOf(DIFF!RemoveModelElement))
+	->collect(e|e.leftElement.toString().split('!')->last())->first();
+helper def : getRemoveModelElementRight : String =
+	DIFF!ComplexChange.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.changeType=#Reference_to_identifier)
+	->collect(e|e.atomicChanges)->first()->select(e|e.oclIsTypeOf(DIFF!RemoveModelElement))
+	->collect(e|e.rightParent.toString().split('!')->last())->first();
+helper def : getAddModelElementLeft : String =
+	DIFF!ComplexChange.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.changeType=#Reference_to_identifier)
+	->collect(e|e.atomicChanges)->first()->select(e|e.oclIsTypeOf(DIFF!AddModelElement))
+	->collect(e|e.leftParent.toString().split('!')->last())->first();
+helper def : getAddModelElementRight : String =
+	DIFF!ComplexChange.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.changeType=#Reference_to_identifier)
+	->collect(e|e.atomicChanges)->first()->select(e|e.oclIsTypeOf(DIFF!AddModelElement))
+	->collect(e|e.rightElement.toString().split('!')->last())->first();
+
+helper def : getRemoveModelElements : Sequence(String) =
+	DIFF!ComplexChange.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.changeType=#Reference_to_identifier)
+	->collect(e|e.atomicChanges)->first()->select(e|e.oclIsTypeOf(DIFF!RemoveModelElement))
+	->collect(e|e.leftElement.toString().split('!')->last());
+
+--param: View
+--returns: Sequence{'ExamView','ExanItemView'}
+helper def : getSons (param : String) : Sequence(String) =
+	Ecore!EClassifier.allInstances()->select(e|e.eSuperTypes.size()>0)
+	->select(e|e.eSuperTypes->collect(e|e.toString()).indexOf(self.targetMMPrefix.concat(param)) > 0)->asSequence()
+	->collect(e|e.toString().split('!')->last());
+
+--param: Sequence{'View'}
+--returns: Sequence{'View','ExamView','ExanItemView','OpenView','MultipleChoiceView'}
+helper def : getSonsRecursive (param : Sequence(String)) : Sequence(String) =
+	let elements : Sequence(String) = self.getSons(param->last())
+	in elements->iterate(p; y : Sequence(String) = param |
+		if self.getSons(p).size()>0 then
+			self.getSonsRecursive(y.append(p))
+		else
+			y.append(p)
+		endif
+	);
+
+helper def : deletedBindings : Sequence(ATL!Binding) =
+	ATL!SimpleOutPatternElement.allInstances()
+	->select(e|self.containsString(e.type.name, self.getSonsRecursive(Sequence{self.getRemoveModelElementRight})))
+	->collect(e|e.bindings)->flatten()->select(e|e.propertyName=self.getRemoveModelElementLeft);
+
+--returns if param1 is in param2
+helper def : containsString (param1 : String, param2 : Sequence(String)) : Boolean =
+	param2->iterate(p; y : Boolean = false |
+		if p = param1 then
+			true
+		else
+			if y = true then
+				true
+			else
+				false
+			endif
+		endif
+	)
+	;
+
+---------------ELIMINATE METAPROPERTY---------------------
+
+helper def : delete (param : Sequence(ATL!Binding)) : Sequence(ATL!Binding) =
+	--elements = Sequence{'question','value'}
+	let elements : Sequence(String) = self.getRemoveModelElements
+	in elements->iterate(p; y : Sequence(ATL!Binding) = param |
+		if self.contains(p, param) then
+		 	y->excluding(param->at(self.index(p, param)))
+		else
+			y
+		endif
+	)
+	;
+helper def : contains (param1 : String, param2 : Sequence(ATL!Binding)) : Boolean =
+	param2->iterate(p; y : Boolean = false |
+		if p.propertyName = param1 then
+			true
+		else
+			if y = true then
+				true
+			else
+				false
+			endif
+		endif
+	)
+	;
+helper def : index (param1 : String, param2 : Sequence(ATL!Binding)) : Integer =
+	param2->iterate(p; y : Integer = 0 |
+		if p.propertyName = param1 then
+			param2->indexOf(p)
+		else
+			y
+		endif
+	)
+	;
+helper def : filtermatch (param : String) : Boolean =
+	let elements : Sequence(String) = self.getRemoveModelElements
+	in elements->iterate(p; y : Boolean = false |
+		if p = param
+		then
+			true
+		else
+			if y = true
+			then
+				true
+			else
+				false
+			endif
+		endif
+	);
+
+rule SimpleOutPatternElement1 {
+	from
+		s : ATL!SimpleOutPatternElement
+		(
+			if self.containsString(s.type.name, self.getSonsRecursive(Sequence{self.getRemoveModelElementRight})) then
+				true
+			else
+				false
+			endif
+		)
+	to
+		t : ATL!SimpleOutPatternElement(
+			type <- s.type,
+			varName <- s.varName,
+			--bindings <- s.bindings
+			bindings <- self.delete(s.bindings)
+		)
+	do {
+			
+		self.getRemoveModelElementLeft->toString().println();
+		self.getRemoveModelElementRight->toString().println();
+		self.getAddModelElementLeft->toString().println();
+		self.getAddModelElementRight->toString().println();
+		self.getRemoveModelElements->toString().println();
+		self.deletedBindings->toString().println();
+		self.getSons('View')->toString().println();
+		self.getSonsRecursive(Sequence{self.getRemoveModelElementRight})->toString().println();
+		
+				
+				t.bindings <- t.bindings->append(thisModule.Binding2Binding(t.bindings));
+				self.idAddedBinding <- self.idAddedBinding + 1;
+		}
+}
+
+--add metaproperty
+lazy rule Binding2Binding {
+	from
+		s : ATL!Binding
+
+	
+	to
+		b : ATL!Binding ( 
+			propertyName <- self.deletedBindings->at(self.idAddedBinding).propertyName,
+			value <- arg,
+			commentsBefore <- Set {'--comment'}
+		),
+		
+		ipe_i_c2 : ATL!SimpleInPatternElement (
+			--varName <- self.deletedRule->first().inPattern.elements->first().varName,
+			type <- ipet_i_c2
+		),
+		ipet_i_c2 : ATL!OclModelElement (
+			name <- 'name',
+			model <- om
+		),
+		om : ATL!OclModel (
+			name <- self.sourceMM	
+		),
+		arg : ATL!NavigationOrAttributeCallExp (
+			name <- self.deletedBindings->at(self.idAddedBinding).propertyName,--controller
+			--source <- ve
+			source <- self.deletedBindings->at(self.idAddedBinding).value
+		),
+		ve : ATL!VariableExp (
+			referredVariable <- ipe_i_c2	
+		)
+		do{
+			
+		}
+		
+}
+
+
+		

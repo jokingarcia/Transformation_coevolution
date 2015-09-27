@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="Cp1252"?>
+<diff:ModelInputSnapshot xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:diff="http://www.eclipse.org/emf/compare/diff/1.1" xmlns:match="http://www.eclipse.org/emf/compare/match/1.1" date="2012-02-10T00:24:11.718+0100">
+  <diff left="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore" right="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol18.ecore">
+    <ownedElements xsi:type="diff:DiffGroup">
+      <subDiffElements xsi:type="diff:DiffGroup">
+        <subDiffElements xsi:type="diff:DiffGroup">
+          <subDiffElements xsi:type="diff:DiffGroup">
+            <subDiffElements xsi:type="diff:UpdateAttribute">
+              <attribute href="http://www.eclipse.org/emf/2002/Ecore#//ENamedElement/name"/>
+              <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//View/controller"/>
+              <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol18.ecore#//View/examController"/>
+            </subDiffElements>
+            <subDiffElements xsi:type="diff:UpdateUniqueReferenceValue">
+              <reference href="http://www.eclipse.org/emf/2002/Ecore#//ETypedElement/eType"/>
+              <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol18.ecore#//View/examController"/>
+              <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//View/controller"/>
+              <leftTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//ExamController"/>
+              <rightTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol18.ecore#//Controller"/>
+            </subDiffElements>
+            <subDiffElements xsi:type="diff:DiffGroup">
+              <subDiffElements xsi:type="diff:UpdateUniqueReferenceValue">
+                <reference href="http://www.eclipse.org/emf/2002/Ecore#//EGenericType/eClassifier"/>
+                <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol18.ecore#//View/examController/@eGenericType"/>
+                <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//View/controller/@eGenericType"/>
+                <leftTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//ExamController"/>
+                <rightTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol18.ecore#//Controller"/>
+              </subDiffElements>
+              <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//View/controller/@eGenericType"/>
+            </subDiffElements>
+            <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//View/controller"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:AddModelElement">
+            <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//View"/>
+            <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol18.ecore#//View/examItemController"/>
+          </subDiffElements>
+          <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//View"/>
+        </subDiffElements>
+        <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#/"/>
+      </subDiffElements>
+    </ownedElements>
+  </diff>
+</diff:ModelInputSnapshot>

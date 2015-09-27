@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="Cp1252"?>
+<diff:ModelInputSnapshot xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:diff="http://www.eclipse.org/emf/compare/diff/1.1" xmlns:match="http://www.eclipse.org/emf/compare/match/1.1" date="2012-02-13T15:26:42.696+0100">
+  <diff left="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore" right="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore">
+    <ownedElements xsi:type="diff:DiffGroup">
+      <subDiffElements xsi:type="diff:DiffGroup">
+        <subDiffElements xsi:type="diff:DiffGroup">
+          <subDiffElements xsi:type="diff:DiffGroup">
+            <subDiffElements xsi:type="diff:UpdateUniqueReferenceValue">
+              <reference href="http://www.eclipse.org/emf/2002/Ecore#//ETypedElement/eType"/>
+              <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//Exam/elements"/>
+              <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//Exam/elements"/>
+              <rightTarget href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//ExamElement"/>
+            </subDiffElements>
+            <subDiffElements xsi:type="diff:RemoveModelElement">
+              <rightParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//Exam/elements"/>
+              <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//Exam/elements/@eGenericType"/>
+            </subDiffElements>
+            <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//Exam/elements"/>
+          </subDiffElements>
+          <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//Exam"/>
+        </subDiffElements>
+        <subDiffElements xsi:type="diff:DiffGroup">
+          <subDiffElements xsi:type="diff:RemoveReferenceValue">
+            <reference href="http://www.eclipse.org/emf/2002/Ecore#//EClass/eSuperTypes"/>
+            <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//OpenElement"/>
+            <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//OpenElement"/>
+            <leftRemovedTarget href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//ExamElement"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:RemoveModelElement">
+            <rightParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//OpenElement"/>
+            <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//OpenElement/@eGenericSuperTypes.0"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:AddModelElement">
+            <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//OpenElement"/>
+            <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//OpenElement/optional"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:AddModelElement">
+            <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//OpenElement"/>
+            <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//OpenElement/question"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:AddModelElement">
+            <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//OpenElement"/>
+            <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//OpenElement/value"/>
+          </subDiffElements>
+          <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//OpenElement"/>
+        </subDiffElements>
+        <subDiffElements xsi:type="diff:DiffGroup">
+          <subDiffElements xsi:type="diff:RemoveReferenceValue">
+            <reference href="http://www.eclipse.org/emf/2002/Ecore#//EClass/eSuperTypes"/>
+            <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//MultipleChoiceElement"/>
+            <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//MultipleChoiceElement"/>
+            <leftRemovedTarget href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//ExamElement"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:RemoveModelElement">
+            <rightParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//MultipleChoiceElement"/>
+            <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//MultipleChoiceElement/@eGenericSuperTypes.0"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:AddModelElement">
+            <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//MultipleChoiceElement"/>
+            <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//MultipleChoiceElement/value"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:AddModelElement">
+            <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//MultipleChoiceElement"/>
+            <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//MultipleChoiceElement/optional"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:AddModelElement">
+            <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//MultipleChoiceElement"/>
+            <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//MultipleChoiceElement/question"/>
+          </subDiffElements>
+          <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//MultipleChoiceElement"/>
+        </subDiffElements>
+        <subDiffElements xsi:type="diff:RemoveModelElement">
+          <rightParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#/"/>
+          <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//ExamElement"/>
+        </subDiffElements>
+        <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#/"/>
+      </subDiffElements>
+    </ownedElements>
+  </diff>
+ 
+</diff:ModelInputSnapshot>

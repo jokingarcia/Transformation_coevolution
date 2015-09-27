@@ -1,0 +1,250 @@
+
+module Split_type_adaptation; -- Module Template
+create OUT : ATL refining IN : ATL, diff : DIFF, Assistant : Ecore;
+
+helper def : MMSize : Integer = 11;
+helper def : EcoreSize : Integer = 7;
+helper def : DiffSize : Integer = 6;
+helper def : resultXXSize : Integer = 10;
+helper def : resultSize : Integer = 8;
+helper def : sourceMM : String = 'ExamXML';
+helper def : targetMM : String = 'AssistantMVC';
+helper def : targetMMPrefix : String = 'Assistant!';
+helper def : indexSplitType : Integer = 1;
+
+helper def : getUpdateAttributeRight : Sequence(String) =
+	DIFF!ComplexChange.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.changeType=#Split_reference_by_type)
+	->collect(e|e.atomicChanges)->first()->select(e|e.oclIsTypeOf(DIFF!UpdateAttribute))
+	->collect(e|e.rightElement.toString().split('!')->last());
+helper def : getUpdateAttributeLeft : Sequence(String) =
+	DIFF!ComplexChange.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.changeType=#Split_reference_by_type)
+	->collect(e|e.atomicChanges)->first()->select(e|e.oclIsTypeOf(DIFF!UpdateAttribute))
+	->collect(e|e.leftElement.toString().split('!')->last());
+
+helper def : getUpdateUniqueReferenceValueRightElement : Sequence(String) =
+	DIFF!ComplexChange.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.changeType=#Split_reference_by_type)
+	->collect(e|e.atomicChanges)->first()->select(e|e.oclIsTypeOf(DIFF!UpdateUniqueReferenceValue))
+	->collect(e|e.rightElement.toString().split('!')->last());
+helper def : getUpdateUniqueReferenceValueLeftElement : Sequence(String) =
+	DIFF!ComplexChange.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.changeType=#Split_reference_by_type)
+	->collect(e|e.atomicChanges)->first()->select(e|e.oclIsTypeOf(DIFF!UpdateUniqueReferenceValue))
+	->collect(e|e.leftElement.toString().split('!')->last());
+
+helper def : getUpdateUniqueReferenceValueRightTarget : Sequence(String) =
+	DIFF!ComplexChange.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.changeType=#Split_reference_by_type)
+	->collect(e|e.atomicChanges)->first()->select(e|e.oclIsTypeOf(DIFF!UpdateUniqueReferenceValue))
+	->collect(e|e.rightTarget.toString().split('!')->last());
+helper def : getUpdateUniqueReferenceValueLeftTarget : Sequence(String) =
+	DIFF!ComplexChange.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.changeType=#Split_reference_by_type)
+	->collect(e|e.atomicChanges)->first()->select(e|e.oclIsTypeOf(DIFF!UpdateUniqueReferenceValue))
+	->collect(e|e.leftTarget.toString().split('!')->last());
+
+helper def : getAddModelElementRight : Sequence(String) =
+	DIFF!ComplexChange.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.changeType=#Split_reference_by_type)
+	->collect(e|e.atomicChanges)->first()->select(e|e.oclIsTypeOf(DIFF!AddModelElement))
+	->collect(e|e.rightElement.toString().split('!')->last());
+helper def : getAddModelElementLeft : Sequence(String) =
+	DIFF!ComplexChange.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.changeType=#Split_reference_by_type)
+	->collect(e|e.atomicChanges)->first()->select(e|e.oclIsTypeOf(DIFF!AddModelElement))
+	->collect(e|e.leftParent.toString().split('!')->last());
+--returns Sequence{'examController','examItemController'}
+helper def : getNewReferences : Sequence(String) =
+	Sequence{self.getUpdateAttributeRight->first(),
+	self.getAddModelElementRight->first()};
+	
+--param: Controller
+--returns: Sequence{'ExamController','ExanItemController'}
+helper def : getSons (param : String) : Sequence(String) =
+	Ecore!EClassifier.allInstances()->select(e|e.eSuperTypes.size()>0)
+	->select(e|e.eSuperTypes->collect(e|e.toString()).indexOf(self.targetMMPrefix.concat(param)) > 0)->asSequence()
+	->collect(e|e.toString().split('!')->last());	
+--param: Sequence{'View'}
+--returns: Sequence{'View','ExamView','ExanItemView','OpenView','MultipleChoiceView'}
+helper def : getSonsRecursive (param : Sequence(String)) : Sequence(String) =
+	let elements : Sequence(String) = self.getSons(param->last())
+	in elements->iterate(p; y : Sequence(String) = param |
+		if self.getSons(p).size()>0 then
+			self.getSonsRecursive(y.append(p))
+		else
+			y.append(p)
+		endif
+	);
+
+--param: examController
+--returns: ExamController
+helper def : getTypeOfRelation (param : String) : String =
+	Ecore!EReference.allInstances()->select(e|e.name=param)
+	->collect(e|e.eType.toString().split('!')->last())->first();
+
+--returns if param1 is in param2
+helper def : containsString (param1 : String, param2 : Sequence(String)) : Boolean =
+	param2->iterate(p; y : Boolean = false |
+		if p = param1 then
+			true
+		else
+			if y = true then
+				true
+			else
+				false
+			endif
+		endif
+	)
+	;
+
+--returns if param is son of param2
+helper def : isSon (param : String, param2 : String) : Boolean =
+	self.containsString(param,self.getSonsRecursive(Sequence{param2}));
+
+helper def : deletedBindings : Sequence(ATL!Binding) =
+	ATL!Binding.allInstances()->select(e|e.value.oclIsTypeOf(ATL!VariableExp))
+	->select(e|e.value.referredVariable.varName=self.getUpdateAttributeLeft->first());
+--param: controller
+--returns OpenController
+helper def : typeOfVariable (param : String) : String =
+	ATL!SimpleOutPatternElement.allInstances()
+	->select(e|e.varName=param)->collect(e|e.type.name.toString())->first();
+
+helper def : elementIncludeBinding (param : ATL!SimpleOutPatternElement) : Boolean =
+	if not param.bindings.oclIsUndefined() then
+		param.bindings->select(e|self.containsString(e.propertyName,self.getUpdateAttributeLeft)).size()>0
+	else
+		false
+	endif;
+
+helper def : deletedBindingOutPatterns : Sequence(String) =
+	ATL!SimpleOutPatternElement.allInstances()
+	->select(e|self.elementIncludeBinding(e))->collect(e|e.type.name.toString());
+
+-----------------ADD METAPROPERTY------------------
+--Returns true if exists new metaproperty
+helper def : existAddModelElement : Boolean =
+	not DIFF!AddModelElement.allInstances()->asSequence()->select(e|e.leftParent.toString().substring(self.DiffSize,e.leftParent.toString().size()) <> self.sourceMM)->first().oclIsUndefined();
+
+helper context Integer def : reduce() : Integer =
+	if self > thisModule.getAddedMetaproperties.size() then
+		self - thisModule.getAddedMetaproperties.size()
+	else
+		self
+	endif;
+---------------ELIMINATE METAPROPERTY---------------------
+helper def : delete (param : Sequence(ATL!Binding)) : Sequence(ATL!Binding) =
+	--elements = Sequence{'fontName','fontColor'}
+	let elements : Sequence(String) = self.getUpdateAttributeLeft
+	in elements->iterate(p; y : Sequence(ATL!Binding) = param |
+		if self.contains(p, param) then
+		 	y->excluding(param->at(self.index(p, param)))
+		else
+			y
+		endif
+	)
+	;
+helper def : contains (param1 : String, param2 : Sequence(ATL!Binding)) : Boolean =
+	param2->iterate(p; y : Boolean = false |
+		if p.propertyName = param1 then
+			true
+		else
+			if y = true then
+				true
+			else
+				false
+			endif
+		endif
+	)
+	;
+helper def : index (param1 : String, param2 : Sequence(ATL!Binding)) : Integer =
+	param2->iterate(p; y : Integer = 0 |
+		if p.propertyName = param1 then
+			param2->indexOf(p)
+		else
+			y
+		endif
+	)
+	;
+
+--==============================RULES===========================================
+	
+rule Module {
+	from
+		s : ATL!Module
+	to
+		t : ATL!Module (
+			name <- s.name,
+			libraries <- s.libraries,
+			isRefining <- s.isRefining,
+			inModels <- s.inModels,
+			outModels <- s.outModels,
+			elements <- s.elements
+		)
+		do{
+			
+		}
+}
+
+----------------------ADD METAPROPERTY------------------------------------------
+
+rule SimpleOutPatternElement1 {
+	from
+		s : ATL!SimpleOutPatternElement
+
+	to
+		t : ATL!SimpleOutPatternElement(
+			type <- s.type,
+			varName <- s.varName,
+			--bindings <- s.bindings
+			bindings <- self.delete(s.bindings)
+		)
+	do {
+			
+			self.getUpdateAttributeRight->toString().println();
+			self.getUpdateAttributeLeft->toString().println();
+			self.getUpdateUniqueReferenceValueRightElement->toString().println();
+			self.getUpdateUniqueReferenceValueLeftElement->toString().println();
+			self.getUpdateUniqueReferenceValueRightTarget->toString().println();
+			self.getUpdateUniqueReferenceValueLeftTarget->toString().println();
+			self.getAddModelElementRight->toString().println();
+			self.getAddModelElementLeft->toString().println();
+			self.typeOfVariable('controller')->toString().println();
+			--binding is added in the rule it has been deleted the other
+			--and only if the new related class is
+			self.indexSplitType <- 1;
+			for (iterator in self.getNewReferences){
+				if (self.elementIncludeBinding(s)) {
+					if (self.isSon(self.typeOfVariable(self.getUpdateAttributeLeft->first()),
+						self.getTypeOfRelation(self.getNewReferences.at(self.indexSplitType)))){
+						t.bindings <- t.bindings->append(thisModule.B2B(t.bindings));
+					}
+					
+				}
+				self.indexSplitType <- self.indexSplitType + 1;
+			}
+			
+				
+		}
+}
+
+lazy rule B2B {
+	from
+		s : ATL!Binding
+	
+	to
+		b : ATL!Binding ( 
+			propertyName <- self.getNewReferences.at(self.indexSplitType),
+			value <- ve
+			--commentsBefore <- Set {'--comment'}
+		),
+		ve : ATL!VariableExp (
+			--Reference to the deleted (controller)
+			referredVariable <- self.deletedBindings->first().value.referredVariable	
+		)
+		do{
+		
+		}
+}

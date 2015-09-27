@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xmi:XMI xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:diff="http://www.eclipse.org/emf/compare/diff/1.1">
+  <diff:DiffModel left="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore"
+      right="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol17.ecore">
+    <complexChanges impact="resolvable" changeType="Generalize_supertype">
+      <atomicChanges xsi:type="diff:RemoveReferenceValue">
+        <reference href="http://www.eclipse.org/emf/2002/Ecore#//EClass/eSuperTypes"/>
+        <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol17.ecore#//MultipleChoice"/>
+        <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//MultipleChoice"/>
+        <leftRemovedTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//ExamItem"/>
+        <rightRemovedTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol17.ecore#//ExamItem"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diff:AddReferenceValue">
+        <reference href="http://www.eclipse.org/emf/2002/Ecore#//EClass/eSuperTypes"/>
+        <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol17.ecore#//MultipleChoice"/>
+        <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//MultipleChoice"/>
+        <rightAddedTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol17.ecore#//Observable"/>
+        <leftAddedTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//Observable"/>
+      </atomicChanges>
+    </complexChanges>
+  </diff:DiffModel>
+  <diff:UpdateUniqueReferenceValue>
+    <reference href="http://www.eclipse.org/emf/2002/Ecore#//EGenericType/eClassifier"/>
+    <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol17.ecore#//MultipleChoice/@eGenericSuperTypes.0"/>
+    <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//MultipleChoice/@eGenericSuperTypes.0"/>
+    <leftTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//Observable"/>
+    <rightTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol17.ecore#//ExamItem"/>
+  </diff:UpdateUniqueReferenceValue>
+</xmi:XMI>

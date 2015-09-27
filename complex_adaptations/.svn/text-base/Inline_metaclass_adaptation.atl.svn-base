@@ -1,0 +1,219 @@
+
+module Inline_metaclass_adaptation; -- Module Template
+create OUT : ATL refining IN : ATL, diff : DIFF;
+
+helper def : MMSize : Integer = 11;
+helper def : EcoreSize : Integer = 7;
+helper def : DiffSize : Integer = 6;
+helper def : diffSize : Integer = 6;
+helper def : resultXXSize : Integer = 10;
+helper def : resultSize : Integer = 8;
+helper def : sourceMM : String = 'ExamXML';
+helper def : targetMM : String = 'AssistantMVC';
+
+helper def : getAddedClass : String =
+	DIFF!ComplexChange.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.changeType=#Inline_metaclass)
+	->collect(e|e.atomicChanges)->first()->select(e|e.oclIsTypeOf(DIFF!AddModelElement))
+	->collect(e|e.rightElement.toString().split('!')->last())->first();
+--Sequence{'OEAttribute'}
+helper def : getMoveMetaproperty : Sequence(String) =
+	DIFF!ComplexChange.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.changeType=#Inline_metaclass)
+	->collect(e|e.atomicChanges)->first()->select(e|e.oclIsTypeOf(DIFF!MoveMetaproperty))
+	->collect(e|e.metaproperty);
+helper def : getRemoveModelElement : Sequence(String) =
+	DIFF!ComplexChange.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.changeType=#Inline_metaclass)
+	->collect(e|e.atomicChanges)->first()->select(e|e.oclIsTypeOf(DIFF!RemoveModelElement))
+	->collect(e|e.leftElement.toString().split('!')->last())->first();
+
+helper def : getAddedMetaclasses : Sequence (String) =
+	Sequence{self.getAddedClass};
+
+--inlined class in the source
+helper def : deletedBindings : Sequence(ATL!Binding) =
+	ATL!Binding.allInstances()->select(e|e.value.oclIsTypeOf(ATL!NavigationOrAttributeCallExp))
+	->select(e|e.value.name=self.getMoveMetaproperty->first());
+
+helper def : deletedRule : Sequence(ATL!MatchedRule) =
+	ATL!MatchedRule.allInstances()->
+	select(e|e.inPattern.elements->first().type.name = self.getRemoveModelElement);
+
+helper def : elementIncludeBinding (param : ATL!SimpleOutPatternElement) : Boolean =
+	if not param.bindings.oclIsUndefined() then
+		param.bindings->select(e|e.value.oclIsTypeOf(ATL!NavigationOrAttributeCallExp))
+		->select(e|e.value.name=self.getMoveMetaproperty->first()).size()>0
+	else
+		false
+	endif;
+
+helper def : deletedBindingOutPattern : String =
+	ATL!SimpleOutPatternElement.allInstances()
+	->select(e|self.elementIncludeBinding(e))->collect(e|e.type.name.toString())->first();
+----------------------DELETE CLASS-------------------------------------
+helper def : getUpdateAttributes : Sequence(String) =
+	Sequence{self.RemoveModelElement};
+
+helper def : deleteRule (param : Sequence(ATL!MatchedRule)) : Sequence(ATL!MatchedRule) =
+	let elements : Sequence(String) = self.getUpdateAttributes
+	in elements->iterate(p; y : Sequence(ATL!MatchedRule) = param |
+		if self.contains(p, param) then
+			self.deleteRule(y->excluding(param->at(self.index(p, param))))
+		else
+			y
+		endif
+	)
+	;
+-----------------ADD METAPROPERTY------------------
+
+--Returns true if exists new metaproperty
+helper def : existAddModelElement : Boolean =
+	not DIFF!AddModelElement.allInstances()->asSequence()->select(e|e.leftParent.toString().substring(self.DiffSize,e.leftParent.toString().size()) <> self.sourceMM)->first().oclIsUndefined();
+
+---------------ELIMINATE METAPROPERTY---------------------
+
+helper def : delete (param : Sequence(ATL!Binding)) : Sequence(ATL!Binding) =
+	--elements = Sequence{'OEAttribute'}
+	let elements : Sequence(String) = self.getMoveMetaproperty
+	in elements->iterate(p; y : Sequence(ATL!Binding) = param |
+		if self.contains(p, param) then
+		 	y->excluding(param->at(self.index(p, param)))
+		else
+			y
+		endif
+	);
+helper def : contains (param1 : String, param2 : Sequence(ATL!MatchedRule)) : Boolean =
+	param2->iterate(p; y : Boolean = false |
+		if p.inPattern.elements->first().type.name = param1 then
+			true
+		else
+			if y = true then
+				true
+			else
+				false
+			endif
+		endif
+	);
+helper def : index (param1 : String, param2 : Sequence(ATL!MatchedRule)) : Integer =
+	param2->iterate(p; y : Integer = 0 |
+		if p.inPattern.elements->first().type.name = param1 then
+			param2->indexOf(p)
+		else
+			y
+		endif
+	);
+helper def : filtermatch (param : String) : Boolean =
+	let elements : Sequence(String) = self.getMoveMetaproperty
+	in elements->iterate(p; y : Boolean = false |
+		if p = param
+		then
+			true
+		else
+			if y = true
+			then
+				true
+			else
+				false
+			endif
+		endif
+	);
+--==============================RULES===========================================
+	
+rule Module {
+	from
+		s : ATL!Module
+	to
+		t : ATL!Module (
+			name <- s.name,
+			libraries <- s.libraries,
+			isRefining <- s.isRefining,
+			inModels <- s.inModels,
+			outModels <- s.outModels,
+			--elements <- s.elements
+			elements <- self.deleteRule(s.elements)
+		)
+		do{
+			self.getRemoveModelElement->toString().println();
+			self.getAddedClass->toString().println();
+			self.getMoveMetaproperty->toString().println();
+			self.deletedBindingOutPattern->toString().println();
+			t.elements <- t.elements->append(thisModule.MatchedRule2MatchedRule(t.elements));
+		}
+}
+-----------------ADD METACLASS---------------------------------------
+lazy rule MatchedRule2MatchedRule {
+	from
+		s : ATL!MatchedRule
+	
+	to
+		mr : ATL!MatchedRule (
+			name <- thisModule.getAddedClass,
+			isAbstract <- false,
+			isRefining <- false,
+			inPattern <- ip_i_c2,
+			outPattern <- op_i_c2,
+			commentsBefore <- Set {'--NEW RULE'}
+		),
+		ip_i_c2 : ATL!InPattern (
+			elements <- Sequence{ipe_i_c2}
+		),
+		ipe_i_c2 : ATL!SimpleInPatternElement (
+			varName <- self.deletedRule->first().inPattern.elements->first().varName,
+			type <- ipet_i_c2
+		),
+		ipet_i_c2 : ATL!OclModelElement (
+			name <- thisModule.getAddedClass,
+			model <- om
+		),
+		om : ATL!OclModel (
+			name <- self.sourceMM	
+		),
+		op_i_c2 : ATL!OutPattern (
+			elements <- Sequence{ope_i_c2}	
+		),
+		ope_i_c2 : ATL!SimpleOutPatternElement(
+			varName <- 't',
+			type <- opet_i_c2,
+			bindings <- Sequence{b}
+		),
+		opet_i_c2 : ATL!OclModelElement (
+			name <- self.deletedBindingOutPattern,--'OpenView'
+			model <- om2
+		),
+		om2 : ATL!OclModel (
+			name <- self.targetMM	
+		),
+		b : ATL!Binding ( 
+			propertyName <- self.deletedBindings->first().propertyName,
+			value <- arg,
+			commentsBefore <- Set {'--comment'}
+		),
+		arg : ATL!NavigationOrAttributeCallExp (
+			name <- self.deletedBindings->first().value.name,
+			source <- ve
+		),
+		ve : ATL!VariableExp (
+			referredVariable <- ipe_i_c2	
+		)
+	
+}
+----------------------ADD METAPROPERTY------------------------------------------
+
+rule SimpleOutPatternElement1 {
+	from
+		s : ATL!SimpleOutPatternElement
+
+	to
+		t : ATL!SimpleOutPatternElement(
+			type <- s.type,
+			varName <- s.varName,
+			bindings <- s.bindings
+			
+		)
+	do {
+		
+				
+		}
+}
+

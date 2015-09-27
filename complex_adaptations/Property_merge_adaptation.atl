@@ -1,0 +1,197 @@
+
+module Property_merge_adaptation; -- Module Template
+create OUT : ATL refining IN : ATL, diff : DIFF;
+
+helper def : MMSize : Integer = 11;
+helper def : EcoreSize : Integer = 7;
+helper def : diffSize : Integer = 6;
+helper def : resultXXSize : Integer = 10;
+helper def : resultSize : Integer = 8;
+helper def : sourceMM : String = 'ExamXML';
+helper def : targetMM : String = 'AssistantMVC';
+helper def : indexPropertyMerge : Integer = 1;
+
+helper def : getUpdateAttributeRight : Sequence(String) =
+	DIFF!ComplexChange.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.changeType=#Property_merge)
+	->collect(e|e.atomicChanges)->first()->select(e|e.oclIsTypeOf(DIFF!UpdateAttribute))
+	->collect(e|e.rightElement.toString().split('!')->last());
+helper def : getUpdateAttributeLeft : Sequence(String) =
+	DIFF!ComplexChange.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.changeType=#Property_merge)
+	->collect(e|e.atomicChanges)->first()->select(e|e.oclIsTypeOf(DIFF!UpdateAttribute))
+	->collect(e|e.leftElement.toString().split('!')->last());
+helper def : getRemoveModelElementRight : Sequence(String) =
+	DIFF!ComplexChange.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.changeType=#Property_merge)
+	->collect(e|e.atomicChanges)->first()->select(e|e.oclIsTypeOf(DIFF!RemoveModelElement))
+	->collect(e|e.rightParent.toString().split('!')->last());
+helper def : getRemoveModelElementLeft : Sequence(String) =
+	DIFF!ComplexChange.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.changeType=#Property_merge)
+	->collect(e|e.atomicChanges)->first()->select(e|e.oclIsTypeOf(DIFF!RemoveModelElement))
+	->collect(e|e.leftElement.toString().split('!')->last());
+
+helper def : getRemoveModelElements : Sequence(String) =
+	Sequence{self.getUpdateAttributeRight->first().split('\\+')->first(),
+	self.getUpdateAttributeRight->first().split('\\+')->last()};
+
+	--returns if param1 is in param2
+helper def : containsString (param1 : String, param2 : Sequence(String)) : Boolean =
+	param2->iterate(p; y : Boolean = false |
+		if p = param1 then
+			true
+		else
+			if y = true then
+				true
+			else
+				false
+			endif
+		endif
+	)
+	;
+
+helper def : deletedBindings : Sequence(ATL!Binding) =
+	ATL!Binding.allInstances()
+	->select(e|self.containsString(e.propertyName,self.getRemoveModelElements));
+
+helper def : elementIncludeBinding (param : ATL!SimpleOutPatternElement) : Boolean =
+	if not param.bindings.oclIsUndefined() then
+		param.bindings->select(e|self.containsString(e.propertyName,self.getRemoveModelElements)).size()>0
+	else
+		false
+	endif;
+
+helper def : deletedBindingOutPatterns : Sequence(String) =
+	ATL!SimpleOutPatternElement.allInstances()
+	->select(e|self.elementIncludeBinding(e))->collect(e|e.type.name.toString());
+
+-----------------ADD METAPROPERTY------------------
+
+helper context Integer def : reduce() : Integer =
+	if self > thisModule.getAddedMetaproperties.size() then
+		self - thisModule.getAddedMetaproperties.size()
+	else
+		self
+	endif;
+---------------ELIMINATE METAPROPERTY---------------------
+helper def : delete (param : Sequence(ATL!Binding)) : Sequence(ATL!Binding) =
+	--elements = Sequence{'fontName','fontColor'}
+	let elements : Sequence(String) = self.getRemoveModelElements
+	in elements->iterate(p; y : Sequence(ATL!Binding) = param |
+		if self.contains(p, param) then
+		 	y->excluding(param->at(self.index(p, param)))
+		else
+			y
+		endif
+	)
+	;
+helper def : contains (param1 : String, param2 : Sequence(ATL!Binding)) : Boolean =
+	param2->iterate(p; y : Boolean = false |
+		if p.propertyName = param1 then
+			true
+		else
+			if y = true then
+				true
+			else
+				false
+			endif
+		endif
+	)
+	;
+helper def : index (param1 : String, param2 : Sequence(ATL!Binding)) : Integer =
+	param2->iterate(p; y : Integer = 0 |
+		if p.propertyName = param1 then
+			param2->indexOf(p)
+		else
+			y
+		endif
+	)
+	;
+helper def : filtermatch (param : String) : Boolean =
+	let elements : Sequence(String) = self.getRemoveModelElements
+	in elements->iterate(p; y : Boolean = false |
+		if p = param
+		then
+			true
+		else
+			if y = true
+			then
+				true
+			else
+				false
+			endif
+		endif
+	);
+--==============================RULES===========================================
+	
+rule Module {
+	from
+		s : ATL!Module
+	to
+		t : ATL!Module (
+			name <- s.name,
+			libraries <- s.libraries,
+			isRefining <- s.isRefining,
+			inModels <- s.inModels,
+			outModels <- s.outModels,
+			elements <- s.elements
+		)
+		do{
+			
+		}
+}
+
+----------------------ADD METAPROPERTY------------------------------------------
+
+rule SimpleOutPatternElement1 {
+	from
+		s : ATL!SimpleOutPatternElement
+
+	to
+		t : ATL!SimpleOutPatternElement(
+			type <- s.type,
+			varName <- s.varName,
+			--bindings <- s.bindings
+			bindings <- self.delete(s.bindings)
+		)
+	do {
+			
+			self.getUpdateAttributeRight->toString().println();
+			self.getUpdateAttributeLeft->toString().println();
+			self.getRemoveModelElementRight->toString().println();
+			self.getRemoveModelElementLeft->toString().println();
+			self.deletedBindingOutPatterns->toString().println();
+			--Binding is added if the OutPattern is equal to the one of deleted rule
+			self.indexPropertyMerge <- 1;
+			for (iterator in self.deletedBindingOutPatterns){
+				if (s.type.name=self.deletedBindingOutPatterns.at(self.indexPropertyMerge)) {
+					t.bindings <- t.bindings->append(thisModule.B2BString(t.bindings));
+				}
+				self.indexPropertyMerge <- self.indexPropertyMerge + 1;
+			}
+			
+				
+		}
+}
+
+--add metaproperty
+lazy rule B2BString {
+	from
+		s : ATL!Binding
+	
+	to
+		b : ATL!Binding ( 
+			propertyName <- self.getUpdateAttributeRight->first(),
+			value <- se
+			--commentsBefore <- Set {'--comment'}
+		),
+		se : ATL!StringExp (
+			--merge of two bindings
+			stringSymbol <- self.deletedBindings->first().value.stringSymbol.concat(self.deletedBindings->last().value.stringSymbol)
+			
+		)
+		do{
+			
+		}
+}

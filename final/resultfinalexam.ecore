@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Difference:DiffModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Difference="http://www.eclipse.org/Difference">
+   <ownedElements xsi:type="Difference:AddModelElement">
+  		<leftParent href="platform:/resource/examination-assistant/metamodels/ExamXML.ecore#/"/>
+     	<rightElement href="platform:/resource/examination-assistant/final/ExamXMLFinal.ecore#//ExerciseElement"/>
+  </ownedElements>
+  <ownedElements xsi:type="Difference:AddModelElement">
+  		<leftParent href="platform:/resource/examination-assistant/metamodels/ExamXML.ecore#/"/>
+     	<rightElement href="platform:/resource/examination-assistant/final/ExamXMLFinal.ecore#//ExtraQuestion"/>
+  </ownedElements>
+  
+   <ownedElements xsi:type="Difference:AddModelElement">
+  		<leftParent href="platform:/resource/examination-assistant/metamodels/ExamXML.ecore#//ExamElement"/>
+     	<rightElement href="platform:/resource/examination-assistant/final/ExamXMLFinal.ecore#//ExamElement/optional"/>
+  </ownedElements>
+  <ownedElements xsi:type="Difference:AddModelElement">
+  		<leftParent href="platform:/resource/examination-assistant/metamodels/ExamXML.ecore#//ExamElement"/>
+     	<rightElement href="platform:/resource/examination-assistant/final/ExamXMLFinal.ecore#//ExamElement/value"/>
+  </ownedElements>
+  
+  <ownedElements xsi:type="Difference:UpdateAttribute">
+  		<attribute href="http://www.eclipse.org/emf/2002/Ecore#//ENamedElement/name"/>
+         <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXML.ecore#//OpenElement"/>
+         <rightElement href="platform:/resource/examination-assistant/final/ExamXMLFinal.ecore#//OElement"/>
+  </ownedElements>
+   <ownedElements xsi:type="Difference:UpdateAttribute">
+  		<attribute href="http://www.eclipse.org/emf/2002/Ecore#//ENamedElement/name"/>
+         <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXML.ecore#//MultipleChoiceElement"/>
+         <rightElement href="platform:/resource/examination-assistant/final/ExamXMLFinal.ecore#//MCElement"/>
+  </ownedElements>
+  
+   <ownedElements xsi:type="Difference:RemoveModelElement">
+  		 <rightParent href="platform:/resource/examination-assistant/metamodels/ExamXML.ecore#//ExamElement/question"/>
+          <leftElement href="platform:/resource/examination-assistant/final/ExamXMLFinal.ecore#//ExamElement"/>
+  </ownedElements>
+  <ownedElements xsi:type="Difference:RemoveModelElement">
+  		 <rightParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol3.ecore#//ExamElement"/>
+         <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol8.ecore#//ExamElement/value"/>
+  </ownedElements>
+</Difference:DiffModel>

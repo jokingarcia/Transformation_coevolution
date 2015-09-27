@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Difference:DiffModel xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:Difference="http://www.eclipse.org/Difference">
+  <coarseChanges changeType="Push_metaproperty">
+    <atomicChanges xsi:type="Difference:ModelElementChangeLeftTarget">
+      <rightParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol8.ecore#//ExamItem"/>
+      <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol10.ecore#//ExamItem/question"/>
+    </atomicChanges>
+    <atomicChanges xsi:type="Difference:MoveModelElement">
+      <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol8.ecore#//Observable/question"/>
+      <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol10.ecore#//Exam/question"/>
+      <leftTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol10.ecore#//Observable"/>
+      <rightTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol8.ecore#//Exam"/>
+    </atomicChanges>
+  </coarseChanges>
+</Difference:DiffModel>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="Cp1252"?>
+<diff:ModelInputSnapshot xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:diff="http://www.eclipse.org/emf/compare/diff/1.1" xmlns:match="http://www.eclipse.org/emf/compare/match/1.1" date="2012-02-15T16:49:41.785+0100">
+  <diff left="platform:/resource/examination-assistant/metamodels/ExamXMLEvol11.ecore" right="platform:/resource/examination-assistant/metamodels/ExamXMLEvol17.ecore">
+    <ownedElements xsi:type="diff:DiffGroup">
+      <subDiffElements xsi:type="diff:DiffGroup">
+        <subDiffElements xsi:type="diff:DiffGroup">
+          <subDiffElements xsi:type="diff:RemoveModelElement">
+            <rightParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol17.ecore#//OpenElement"/>
+            <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol11.ecore#//OpenElement/OEAttribute"/>
+          </subDiffElements>
+          <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol11.ecore#//OpenElement"/>
+        </subDiffElements>
+        <subDiffElements xsi:type="diff:AddModelElement">
+          <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol11.ecore#/"/>
+          <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol17.ecore#//NewOpenElement"/>
+        </subDiffElements>
+        <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol11.ecore#/"/>
+      </subDiffElements>
+    </ownedElements>
+  </diff>
+ 
+</diff:ModelInputSnapshot>

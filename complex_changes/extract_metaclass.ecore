@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Difference:DiffModel xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:Difference="http://www.eclipse.org/Difference">
+  <ownedElements xsi:type="Difference:ModelElementChangeLeftTarget">
+    <rightParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol9.ecore#/"/>
+    <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol11.ecore#//ExamData"/>
+  </ownedElements>
+  <ownedElements xsi:type="Difference:ModelElementChangeRightTarget">
+    <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol11.ecore#//ExamItem"/>
+    <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol9.ecore#//ExamItem/question"/>
+  </ownedElements>
+  <ownedElements xsi:type="Difference:ModelElementChangeRightTarget">
+    <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol11.ecore#//ExamItem"/>
+    <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol9.ecore#//ExamItem/value"/>
+  </ownedElements>
+  <coarseChanges changeType="Extract_metaclass"/>
+</Difference:DiffModel>

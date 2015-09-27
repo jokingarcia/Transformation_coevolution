@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:atl="http://www.eclipse.org/gmt/2005/ATL" xmlns:ocl="http://www.eclipse.org/gmt/2005/OCL">
+  <atl:Module location="1:1-33:29" name="exam2mvc">
+    <inModels location="2:32-2:44" name="IN" metamodel="/2"/>
+    <outModels location="2:8-2:26" name="OUT" metamodel="/1"/>
+    <elements xsi:type="atl:MatchedRule" location="3:1-12:26" name="OpenQuestion">
+      <outPattern location="5:5-12:25">
+        <elements xsi:type="atl:SimpleOutPatternElement" location="5:9-5:51" varName="controller" variableExp="/0/@elements.0/@outPattern/@elements.1/@bindings.0/@value">
+          <type xsi:type="ocl:OclModelElement" location="5:22-5:49" name="OpenController" model="/1"/>
+        </elements>
+        <elements xsi:type="atl:SimpleOutPatternElement" location="6:3-9:26" varName="view" variableExp="/0/@elements.0/@outPattern/@elements.2/@bindings.1/@value">
+          <type xsi:type="ocl:OclModelElement" location="6:10-6:31" name="OpenView" model="/1"/>
+          <bindings location="7:3-7:27" propertyName="controller">
+            <value xsi:type="ocl:VariableExp" location="7:17-7:27" referredVariable="/0/@elements.0/@outPattern/@elements.0"/>
+          </bindings>
+          <bindings location="8:3-8:24" propertyName="fontName">
+            <value xsi:type="ocl:NavigationOrAttributeCallExp" location="8:15-8:24" name="attr1">
+              <source xsi:type="ocl:VariableExp" location="8:15-8:18" referredVariable="/0/@elements.0/@inPattern/@elements.0"/>
+            </value>
+          </bindings>
+          <bindings location="9:3-9:25" propertyName="fontColor">
+            <value xsi:type="ocl:NavigationOrAttributeCallExp" location="9:16-9:25" name="attr2">
+              <source xsi:type="ocl:VariableExp" location="9:16-9:19" referredVariable="/0/@elements.0/@inPattern/@elements.0"/>
+            </value>
+          </bindings>
+        </elements>
+        <elements xsi:type="atl:SimpleOutPatternElement" location="10:3-12:25" varName="model">
+          <type xsi:type="ocl:OclModelElement" location="10:11-10:28" name="Open" model="/1"/>
+          <bindings location="11:9-11:33" propertyName="question">
+            <value xsi:type="ocl:NavigationOrAttributeCallExp" location="11:21-11:33" name="question">
+              <source xsi:type="ocl:VariableExp" location="11:21-11:24" referredVariable="/0/@elements.0/@inPattern/@elements.0"/>
+            </value>
+          </bindings>
+          <bindings location="12:6-12:23" propertyName="observers">
+            <value xsi:type="ocl:VariableExp" location="12:19-12:23" referredVariable="/0/@elements.0/@outPattern/@elements.1"/>
+          </bindings>
+        </elements>
+      </outPattern>
+      <inPattern location="4:5-4:35">
+        <elements xsi:type="atl:SimpleInPatternElement" location="4:10-4:35" varName="xml" variableExp="/0/@elements.0/@outPattern/@elements.1/@bindings.1/@value/@source /0/@elements.0/@outPattern/@elements.1/@bindings.2/@value/@source /0/@elements.0/@outPattern/@elements.2/@bindings.0/@value/@source">
+          <type xsi:type="ocl:OclModelElement" location="4:16-4:35" name="OpenElement" model="/2"/>
+        </elements>
+      </inPattern>
+    </elements>
+    <elements xsi:type="atl:MatchedRule" location="13:1-17:8" name="Exams">
+      <outPattern location="15:3-17:7">
+        <elements xsi:type="atl:SimpleOutPatternElement" location="15:6-17:7" varName="mvc">
+          <type xsi:type="ocl:OclModelElement" location="15:12-15:29" name="Exam" model="/1"/>
+          <bindings location="16:5-16:30" propertyName="examItems">
+            <value xsi:type="ocl:NavigationOrAttributeCallExp" location="16:18-16:30" name="elements">
+              <source xsi:type="ocl:VariableExp" location="16:18-16:21" referredVariable="/0/@elements.1/@inPattern/@elements.0"/>
+            </value>
+          </bindings>
+        </elements>
+      </outPattern>
+      <inPattern location="14:3-14:26">
+        <elements xsi:type="atl:SimpleInPatternElement" location="14:8-14:26" varName="xml" variableExp="/0/@elements.1/@outPattern/@elements.0/@bindings.0/@value/@source">
+          <type xsi:type="ocl:OclModelElement" location="14:14-14:26" name="Exam" model="/2"/>
+        </elements>
+      </inPattern>
+    </elements>
+    <elements xsi:type="atl:MatchedRule" location="18:1-27:24" name="MultipleChoice">
+      <outPattern location="20:5-27:22">
+        <elements xsi:type="atl:SimpleOutPatternElement" location="20:9-20:61" varName="controller" variableExp="/0/@elements.2/@outPattern/@elements.1/@bindings.0/@value">
+          <type xsi:type="ocl:OclModelElement" location="20:22-20:59" name="MultipleChoiceController" model="/1"/>
+        </elements>
+        <elements xsi:type="atl:SimpleOutPatternElement" location="21:3-24:23" varName="view" variableExp="/0/@elements.2/@outPattern/@elements.2/@bindings.1/@value">
+          <type xsi:type="ocl:OclModelElement" location="21:10-21:41" name="MultipleChoiceView" model="/1"/>
+          <bindings location="22:3-22:27" propertyName="controller">
+            <value xsi:type="ocl:VariableExp" location="22:17-22:27" referredVariable="/0/@elements.2/@outPattern/@elements.0"/>
+          </bindings>
+          <bindings location="23:3-23:22" propertyName="fontName">
+            <value xsi:type="ocl:StringExp" location="23:15-23:22" stringSymbol="Times"/>
+          </bindings>
+          <bindings location="24:3-24:21" propertyName="fontColor">
+            <value xsi:type="ocl:StringExp" location="24:16-24:21" stringSymbol="Red"/>
+          </bindings>
+        </elements>
+        <elements xsi:type="atl:SimpleOutPatternElement" location="25:3-27:22" varName="model">
+          <type xsi:type="ocl:OclModelElement" location="25:11-25:38" name="MultipleChoice" model="/1"/>
+          <bindings location="26:9-26:33" propertyName="question">
+            <value xsi:type="ocl:NavigationOrAttributeCallExp" location="26:21-26:33" name="question">
+              <source xsi:type="ocl:VariableExp" location="26:21-26:24" referredVariable="/0/@elements.2/@inPattern/@elements.0"/>
+            </value>
+          </bindings>
+          <bindings location="27:3-27:20" propertyName="observers">
+            <value xsi:type="ocl:VariableExp" location="27:16-27:20" referredVariable="/0/@elements.2/@outPattern/@elements.1"/>
+          </bindings>
+        </elements>
+      </outPattern>
+      <inPattern location="19:5-19:45">
+        <elements xsi:type="atl:SimpleInPatternElement" location="19:10-19:45" varName="xml" variableExp="/0/@elements.2/@outPattern/@elements.2/@bindings.0/@value/@source">
+          <type xsi:type="ocl:OclModelElement" location="19:16-19:45" name="MultipleChoiceElement" model="/2"/>
+        </elements>
+      </inPattern>
+    </elements>
+    <elements xsi:type="atl:MatchedRule" location="28:1-33:29" name="ExamElement">
+      <outPattern location="32:5-33:28">
+        <elements xsi:type="atl:SimpleOutPatternElement" location="32:9-33:28" varName="view">
+          <type xsi:type="ocl:OclModelElement" location="32:16-32:37" name="OpenView" model="/1"/>
+          <bindings location="33:3-33:27" propertyName="optional">
+            <value xsi:type="ocl:NavigationOrAttributeCallExp" location="33:15-33:27" name="optional">
+              <source xsi:type="ocl:VariableExp" location="33:15-33:18" referredVariable="/0/@elements.3/@inPattern/@elements.0"/>
+            </value>
+          </bindings>
+        </elements>
+      </outPattern>
+      <inPattern location="29:5-31:4">
+        <elements xsi:type="atl:SimpleInPatternElement" location="29:10-29:35" varName="xml" variableExp="/0/@elements.3/@inPattern/@filter/@source/@source/@source /0/@elements.3/@outPattern/@elements.0/@bindings.0/@value/@source">
+          <type xsi:type="ocl:OclModelElement" location="29:16-29:35" name="ExamElement" model="/2"/>
+        </elements>
+        <filter xsi:type="ocl:OperatorCallExp" location="30:3-30:60" operationName="=">
+          <source xsi:type="ocl:NavigationOrAttributeCallExp" location="30:3-30:53" name="openAttribute">
+            <source xsi:type="ocl:OperationCallExp" location="30:3-30:39" operationName="oclIsTypeOf">
+              <source xsi:type="ocl:VariableExp" location="30:3-30:6" referredVariable="/0/@elements.3/@inPattern/@elements.0"/>
+              <arguments xsi:type="ocl:OclModelElement" location="30:19-30:38" name="OpenElement" model="/2"/>
+            </source>
+          </source>
+          <arguments xsi:type="ocl:BooleanExp" location="30:56-30:60" booleanSymbol="true"/>
+        </filter>
+      </inPattern>
+    </elements>
+  </atl:Module>
+  <ocl:OclModel location="2:14-2:26" name="AssistantMVC" elements="/0/@elements.0/@outPattern/@elements.0/@type /0/@elements.0/@outPattern/@elements.1/@type /0/@elements.0/@outPattern/@elements.2/@type /0/@elements.1/@outPattern/@elements.0/@type /0/@elements.2/@outPattern/@elements.0/@type /0/@elements.2/@outPattern/@elements.1/@type /0/@elements.2/@outPattern/@elements.2/@type /0/@elements.3/@outPattern/@elements.0/@type" model="/0/@outModels.0"/>
+  <ocl:OclModel location="2:37-2:44" name="ExamXML" elements="/0/@elements.0/@inPattern/@elements.0/@type /0/@elements.1/@inPattern/@elements.0/@type /0/@elements.2/@inPattern/@elements.0/@type /0/@elements.3/@inPattern/@elements.0/@type /0/@elements.3/@inPattern/@filter/@source/@source/@arguments.0" model="/0/@inModels.0"/>
+</xmi:XMI>

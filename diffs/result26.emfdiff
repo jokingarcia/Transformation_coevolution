@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="Cp1252"?>
+<diff:ModelInputSnapshot xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:diff="http://www.eclipse.org/emf/compare/diff/1.1" xmlns:match="http://www.eclipse.org/emf/compare/match/1.1" date="2012-02-09T16:58:49.012+0100">
+  <diff left="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore" right="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol17.ecore">
+    <ownedElements xsi:type="diff:DiffGroup">
+      <subDiffElements xsi:type="diff:DiffGroup">
+        <subDiffElements xsi:type="diff:DiffGroup">
+          <subDiffElements xsi:type="diff:RemoveModelElement">
+            <rightParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol17.ecore#//View"/>
+            <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//View/controller"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:AddModelElement">
+            <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//View"/>
+            <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol17.ecore#//View/controller"/>
+          </subDiffElements>
+          <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//View"/>
+        </subDiffElements>
+        <subDiffElements xsi:type="diff:DiffGroup">
+          <subDiffElements xsi:type="diff:AddModelElement">
+            <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//Controller"/>
+            <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol17.ecore#//Controller/controller"/>
+          </subDiffElements>
+          <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//Controller"/>
+        </subDiffElements>
+        <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#/"/>
+      </subDiffElements>
+    </ownedElements>
+  </diff>
+ 
+</diff:ModelInputSnapshot>

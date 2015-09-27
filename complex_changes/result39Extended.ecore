@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<diffExtended:DiffModel xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:diffExtended="http://www.eclipse.org/emf/compare/diffExtended/1.1" left="platform:/resource/Examination_Assistant/metamodels/AssistantMVCEvol21.ecore"
+    right="platform:/resource/Examination_Assistant/metamodels/AssistantMVCEvol22.ecore">
+  <complexChanges impact="resolvable" changeType="Extract_metaclass">
+    <atomicChanges xsi:type="diffExtended:AddModelElement">
+      <leftParent href="platform:/resource/Examination_Assistant/metamodels/AssistantMVCEvol21.ecore#/"/>
+      <rightElement href="platform:/resource/Examination_Assistant/metamodels/AssistantMVCEvol22.ecore#//NewOpenView"/>
+    </atomicChanges>
+    <atomicChanges xsi:type="diffExtended:RemoveModelElement">
+      <rightParent href="platform:/resource/Examination_Assistant/metamodels/AssistantMVCEvol22.ecore#//OpenView"/>
+      <leftElement href="platform:/resource/Examination_Assistant/metamodels/AssistantMVCEvol21.ecore#//OpenView/style"/>
+    </atomicChanges>
+  </complexChanges>
+</diffExtended:DiffModel>

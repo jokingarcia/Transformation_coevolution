@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xmi:XMI xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:diffExtended="http://www.eclipse.org/emf/compare/diffExtended/1.1">
+  <diffExtended:DiffModel left="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore"
+      right="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore">
+    <complexChanges impact="resolvable" changeType="Flatten_hierarchy">
+      <atomicChanges xsi:type="diffExtended:RemoveReferenceValue">
+        <reference href="http://www.eclipse.org/emf/2002/Ecore#//EClass/eSuperTypes"/>
+        <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//OpenElement"/>
+        <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//OpenElement"/>
+        <leftRemovedTarget href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//ExamElement"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diffExtended:RemoveReferenceValue">
+        <reference href="http://www.eclipse.org/emf/2002/Ecore#//EClass/eSuperTypes"/>
+        <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//MultipleChoiceElement"/>
+        <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//MultipleChoiceElement"/>
+        <leftRemovedTarget href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//ExamElement"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diffExtended:AddModelElement">
+        <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//OpenElement"/>
+        <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//OpenElement/optional"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diffExtended:AddModelElement">
+        <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//OpenElement"/>
+        <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//OpenElement/question"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diffExtended:AddModelElement">
+        <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//OpenElement"/>
+        <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//OpenElement/value"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diffExtended:AddModelElement">
+        <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//MultipleChoiceElement"/>
+        <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//MultipleChoiceElement/value"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diffExtended:AddModelElement">
+        <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//MultipleChoiceElement"/>
+        <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//MultipleChoiceElement/optional"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diffExtended:AddModelElement">
+        <leftParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//MultipleChoiceElement"/>
+        <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//MultipleChoiceElement/question"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diffExtended:RemoveModelElement">
+        <rightParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#/"/>
+        <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//ExamElement"/>
+      </atomicChanges>
+    </complexChanges>
+  </diffExtended:DiffModel>
+  <diffExtended:RemoveModelElement>
+    <rightParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//Exam/elements"/>
+    <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//Exam/elements/@eGenericType"/>
+  </diffExtended:RemoveModelElement>
+  <diffExtended:RemoveModelElement>
+    <rightParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//OpenElement"/>
+    <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//OpenElement/@eGenericSuperTypes.0"/>
+  </diffExtended:RemoveModelElement>
+  <diffExtended:RemoveModelElement>
+    <rightParent href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//MultipleChoiceElement"/>
+    <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//MultipleChoiceElement/@eGenericSuperTypes.0"/>
+  </diffExtended:RemoveModelElement>
+  <diffExtended:UpdateUniqueReferenceValue>
+    <reference href="http://www.eclipse.org/emf/2002/Ecore#//ETypedElement/eType"/>
+    <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol51.ecore#//Exam/elements"/>
+    <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//Exam/elements"/>
+    <rightTarget href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol5.ecore#//ExamElement"/>
+  </diffExtended:UpdateUniqueReferenceValue>
+</xmi:XMI>

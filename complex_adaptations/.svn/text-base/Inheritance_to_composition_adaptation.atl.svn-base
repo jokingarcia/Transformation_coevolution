@@ -1,0 +1,112 @@
+
+module Move_metaproperty_adaptation; -- Module Template
+create OUT : ATL refining IN : ATL, diff : DIFF;
+
+helper def : DiffSize : Integer = 6;
+helper def : MOFSize : Integer = 5;	
+helper def : sourceMM : String = 'ExamXML';
+helper def : targetMM : String = 'AssistantMVC';
+
+--returns: 'OpenElement'
+helper def : getSon : String =
+	DIFF!ComplexChange.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.changeType=#Inheritance_to_composition)
+	->collect(e|e.atomicChanges)->first()->select(e|e.oclIsTypeOf(DIFF!RemoveReferenceValue))
+	->collect(e|e.rightElement.toString().split('!')->last())->first();
+
+rule Inheritance_to_composition {
+	from
+		s: ATL!MatchedRule
+		(
+		if not s.inPattern.filter.oclIsUndefined() then
+			if s.inPattern.filter.oclIsTypeOf(ATL!OperatorCallExp) then
+				if not s.inPattern.filter.source.oclIsUndefined() then
+					if s.inPattern.filter.source.oclIsTypeOf(ATL!NavigationOrAttributeCallExp) then
+						if not s.inPattern.filter.source.source.oclIsUndefined() then
+							if s.inPattern.filter.source.source.oclIsTypeOf(ATL!OperationCallExp)then
+								if s.inPattern.filter.source.source.operationName='oclIsTypeOf' then
+									if not s.inPattern.filter.source.source.arguments->first().oclIsUndefined() then
+										if s.inPattern.filter.source.source.arguments->first().name=self.getSon then
+											true
+										else
+											false
+										endif
+									else
+										false
+									endif
+								else
+									false
+								endif
+							else
+								false
+							endif
+						else
+							false
+						endif
+					else
+						false
+					endif
+				else
+					false
+				endif
+			else
+				false
+			endif
+		else
+			false
+		endif
+		)
+	to
+		t : ATL!MatchedRule(
+			inPattern <- ip_i_c2,
+			children <- s.children,
+			superRule <- s.superRule,
+			isAbstract <- s.isAbstract,
+			isRefining <- s.isRefining,
+			isNoDefault <- s.isNoDefault,
+			"module" <- s."module",
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter,
+			outPattern <- s.outPattern,
+			actionBlock <- s.actionBlock,
+			variables <- s.variables,
+			name <- s.name	
+		),
+		--remember to fill all the attributes!
+		ip_i_c2 : ATL!InPattern (
+			elements <- Sequence{ipe_i_c2},
+			"rule" <- s.inPattern."rule",
+			filter <- oce
+		),
+		ipe_i_c2 : ATL!SimpleInPatternElement (
+			varName <- s.inPattern.elements->first().varName,--'xml'
+			type <- ipet_i_c2,
+			variableExp <- s.inPattern.elements->first().variableExp
+		),
+		ipet_i_c2 : ATL!OclModelElement (
+			name <- s.inPattern.elements->first().type.name,--'ExamElement'
+			model <- om
+		),
+		om : ATL!OclModel (
+			name <- self.sourceMM
+		),
+		--filter
+		oce : ATL!OperatorCallExp (
+			operationName <- s.inPattern.filter.operationName,--'='
+			source <- noace,
+			arguments <- s.inPattern.filter.arguments
+		),
+		noace : ATL!NavigationOrAttributeCallExp (
+			name <- s.inPattern.filter.source.name, --'openAttribute'
+			source <- oce2
+		),
+		oce2 : ATL!OperationCallExp (
+			operationName <- 'refInmediateComposite',
+			source <- s.inPattern.filter.source.source.source
+		)
+	do{
+		self.getSon.println();
+		
+	}
+}

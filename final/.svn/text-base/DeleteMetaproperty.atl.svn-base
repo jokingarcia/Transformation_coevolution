@@ -1,0 +1,302 @@
+--Delete "optional" attribute
+
+module DeleteMetaproperty; -- Module Template
+create OUT : ATL refining IN : ATL;
+
+helper def : DeletedAttribute : String = 'optional';
+
+--returns if the param is undefined
+helper def : isUndefined(param: ATL!OclAnyType) : Boolean =
+	if param.oclIsTypeOf(ATL!NavigationOrAttributeCallExp) then
+		if param.name = self.DeletedAttribute then
+			true
+		else
+			false
+		endif
+	else
+		if param.oclIsTypeOf(ATL!OperatorCallExp) then
+			if param.operationName = 'and' then
+				thisModule.isUndefined(param.source) and thisModule.isUndefined(param.arguments->first())
+			else
+				if param.operationName = 'or' then
+					thisModule.isUndefined(param.source) or thisModule.isUndefined(param.arguments->first())
+				else
+					if param.operationName = 'not' then
+						thisModule.isUndefined(param.source)
+					else
+						false
+					endif
+				endif
+			endif
+		else
+			false
+		endif
+	endif
+	;
+
+
+-- We copy the ATL!Module to make sure the whole program is actually copied even if it contains no binding.
+rule Module {
+	from
+		s : ATL!Module
+	to
+		t : ATL!Module (
+			name <- s.name,
+			libraries <- s.libraries,
+			isRefining <- s.isRefining,
+			inModels <- s.inModels,
+			outModels <- s.outModels,
+			elements <- s.elements
+		)
+}
+
+rule SimpleOutPatternElement {
+	from
+		s : ATL!SimpleOutPatternElement(
+			if s.varName = 'model' then
+				true
+			else
+				false
+			endif
+		)
+	to
+		t : ATL!SimpleOutPatternElement(
+			type <- s.type,
+			varName <- s.varName,
+			bindings <- s.bindings->select(e|e.propertyName<>self.DeletedAttribute)->select(e|e.propertyName<>'observers')	
+		)
+	
+}
+
+
+
+
+--OR
+rule OperatorCallExp {
+	from
+		s: ATL!OperatorCallExp(
+			if s.operationName = 'or' then
+				if thisModule.isUndefined(s) then
+					true
+				else
+					false
+				endif
+			else
+				false
+			endif
+				
+		)
+		
+	to
+		t : ATL!OperatorCallExp(
+			operationName <- s.operationName,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+		
+		
+		
+	do{
+		'ok'.println();
+	}
+}
+
+--AND: source undefined
+rule OperatorCallExp2 {
+	from
+		s: ATL!OperatorCallExp(
+			if not s.source.oclIsUndefined() then
+				if s.source.oclIsTypeOf(ATL!OperatorCallExp) then
+					if s.source.operationName = 'and' then
+						if thisModule.isUndefined(s.source.source) then
+							true
+						else
+							false
+						endif
+					else
+						false
+					endif
+				else
+					false
+				endif
+			else
+				false
+			endif
+			
+				
+		)
+		
+	to
+		t : ATL!OperatorCallExp(
+			source <- s.source.arguments->first(),
+			arguments <- s.arguments,
+			operationName <- s.operationName,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+		
+		
+		
+	do{
+		'ok2'.println();
+	}
+}
+
+--AND: arguments undefined
+rule OperatorCallExp3 {
+	from
+		s: ATL!OperatorCallExp(
+			if not s.source.oclIsUndefined() then
+				if s.source.oclIsTypeOf(ATL!OperatorCallExp) then
+					if s.source.operationName = 'and' then
+						if thisModule.isUndefined(s.source.arguments->first()) then
+							true
+						else
+							false
+						endif
+					else
+						false
+					endif
+				else
+					false
+				endif
+			else
+				false
+			endif
+			
+			and not(
+				if not s.source.oclIsUndefined() then
+				if s.source.oclIsTypeOf(ATL!OperatorCallExp) then
+					if s.source.operationName = 'and' then
+						if thisModule.isUndefined(s.source.source) then
+							true
+						else
+							false
+						endif
+					else
+						false
+					endif
+				else
+					false
+				endif
+			else
+				false
+			endif	
+			)
+				
+		)
+		
+	to
+		t : ATL!OperatorCallExp(
+			source <- s.source.source,
+			arguments <- s.arguments,
+			operationName <- s.operationName,
+			type <- s.type,
+			ifExp3 <- s.ifExp3,
+			appliedProperty <- s.appliedProperty,
+			collection <- s.collection,
+			letExp <- s.letExp,
+			loopExp <- s.loopExp,
+			parentOperation <- s.parentOperation,
+			initializedVariable <- s.initializedVariable,
+			ifExp2 <- s.ifExp2,
+			owningOperation <- s.owningOperation,
+			ifExp1 <- s.ifExp1,
+			owningAttribute <- s.owningAttribute,
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter
+		)
+		
+		
+		
+	do{
+		'ok3'.println();
+	}
+}
+
+--If there is an add in the filter and arguments is undefined, it is uploaded
+--source to the filter
+rule MatchedRule2 {
+	from
+		s: ATL!MatchedRule
+		(
+		if not s.inPattern.filter.oclIsUndefined() then
+			if s.inPattern.filter.oclIsTypeOf(ATL!OperatorCallExp) then
+				if s.inPattern.filter.operationName = 'and' then	
+					if not s.inPattern.filter.arguments->first().oclIsUndefined() then
+						if thisModule.isUndefined(s.inPattern.filter.arguments->first()) then
+							true
+						else
+							false
+						endif
+					else
+						false
+					endif
+				else
+					false
+				endif
+			else
+				false
+			endif
+		else
+			false
+		endif
+		)
+	to
+		t : ATL!MatchedRule(
+			--delete filter and source and move up the source of the source
+			--as a filter.
+			inPattern <- ip_i_c2,
+			children <- s.children,
+			superRule <- s.superRule,
+			isAbstract <- s.isAbstract,
+			isRefining <- s.isRefining,
+			isNoDefault <- s.isNoDefault,
+			"module" <- s."module",
+			location <- s.location,
+			commentsBefore <- s.commentsBefore,
+			commentsAfter <- s.commentsAfter,
+			outPattern <- s.outPattern,
+			actionBlock <- s.actionBlock,
+			variables <- s.variables,
+			name <- s.name	
+		),
+		ip_i_c2 : ATL!InPattern (
+			elements <- s.inPattern.elements,
+			"rule" <- s.inPattern."rule",
+			filter <- s.inPattern.filter.source
+			
+		)
+		
+		
+	do{
+		'ok4'.println();
+	}
+}

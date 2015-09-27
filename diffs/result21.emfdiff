@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="Cp1252"?>
+<diff:ModelInputSnapshot xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:diff="http://www.eclipse.org/emf/compare/diff/1.1" xmlns:match="http://www.eclipse.org/emf/compare/match/1.1" date="2012-02-17T15:54:54.069+0100">
+  <diff left="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore" right="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore">
+    <ownedElements xsi:type="diff:DiffGroup">
+      <subDiffElements xsi:type="diff:DiffGroup">
+        <subDiffElements xsi:type="diff:DiffGroup">
+          <subDiffElements xsi:type="diff:AddReferenceValue">
+            <reference href="http://www.eclipse.org/emf/2002/Ecore#//EClass/eSuperTypes"/>
+            <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoice"/>
+            <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoice"/>
+            <rightAddedTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//Multiple"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:RemoveModelElement">
+            <rightParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoice"/>
+            <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoice/numberOfChoices"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:RemoveModelElement">
+            <rightParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoice"/>
+            <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoice/selectionWay"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:AddModelElement">
+            <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoice"/>
+            <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoice/@eGenericSuperTypes.1"/>
+          </subDiffElements>
+          <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoice"/>
+        </subDiffElements>
+        <subDiffElements xsi:type="diff:DiffGroup">
+          <subDiffElements xsi:type="diff:AddReferenceValue">
+            <reference href="http://www.eclipse.org/emf/2002/Ecore#//EClass/eSuperTypes"/>
+            <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoiceController"/>
+            <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoiceController"/>
+            <rightAddedTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//Multiple"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:RemoveModelElement">
+            <rightParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoiceController"/>
+            <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoiceController/selectionWay"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:RemoveModelElement">
+            <rightParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoiceController"/>
+            <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoiceController/numberOfChoices"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:AddModelElement">
+            <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoiceController"/>
+            <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoiceController/@eGenericSuperTypes.1"/>
+          </subDiffElements>
+          <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoiceController"/>
+        </subDiffElements>
+        <subDiffElements xsi:type="diff:DiffGroup">
+          <subDiffElements xsi:type="diff:AddReferenceValue">
+            <reference href="http://www.eclipse.org/emf/2002/Ecore#//EClass/eSuperTypes"/>
+            <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoiceView"/>
+            <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoiceView"/>
+            <rightAddedTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//Multiple"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:RemoveModelElement">
+            <rightParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoiceView"/>
+            <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoiceView/selectionWay"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:RemoveModelElement">
+            <rightParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoiceView"/>
+            <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoiceView/numberOfChoices"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:AddModelElement">
+            <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoiceView"/>
+            <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoiceView/@eGenericSuperTypes.1"/>
+          </subDiffElements>
+          <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoiceView"/>
+        </subDiffElements>
+        <subDiffElements xsi:type="diff:AddModelElement">
+          <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#/"/>
+          <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//Multiple"/>
+        </subDiffElements>
+        <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#/"/>
+      </subDiffElements>
+    </ownedElements>
+  </diff>
+  
+</diff:ModelInputSnapshot>

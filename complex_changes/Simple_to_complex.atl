@@ -1,0 +1,1618 @@
+--For each pattern of atomic changes corresponding to metamodel changes create a ComplexChange.
+--in: result21.emfdiff, diff.ecore
+--Also AssistantMVCEvol13 as input
+--out: result21Extended, diffExtended
+module Simple_to_complex; -- Module Template
+create complexExtended : diffExtended from complex : DIFF, IN : Ecore, Exam2 : Ecore2;
+
+---------------------------------------------------------------------------------
+--            _   ___  _       _ ___    _     _  _  _  _          _  _
+--           |_ \/ |  |_| /_\ |   |    |_ | ||_||_ |_||  |   /_\ |_ |_ 
+--           |_ /\ |  |\ /   \|_  |     _||_||  |_ |\ |_ |_ /   \ _| _|
+--------------------------------------------------------------------------------
+
+--returns the lenght of "Assistant"
+helper def : MMSize : Integer =11;
+--"Ecore"
+helper def : EcoreSize : Integer =7;
+--"resultxx"
+helper def : resultSize : Integer =10;
+helper def : param : String ='';
+helper def : targetMMName : String = 'Assistant!';
+
+--(Class addition)
+helper def : getAddModelElement : Sequence(String) =
+	DIFF!AddModelElement.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.rightElement.toString().split('!')->last()<>'<unnamed>')
+	->collect(e|e.rightElement.toString().split('!')->last());
+--(delete property)
+helper def : getRemoveModelElementRight : Sequence(String) =
+	DIFF!RemoveModelElement.allInstances()->select(e|not e.oclIsUndefined())
+	->asSequence()->collect(e|e.rightParent.toString().split('!')->last());
+helper def : getRemoveModelElementLeft : Sequence(String) =
+	DIFF!RemoveModelElement.allInstances()->select(e|not e.oclIsUndefined())
+	->asSequence()->collect(e|e.leftElement.toString().split('!')->last());
+--(add reference)
+helper def : getAddReferenceValueRight : Sequence(String) =
+	DIFF!AddReferenceValue.allInstances()->select(e|not e.oclIsUndefined())
+	->asSequence()->collect(e|e.rightAddedTarget.toString().split('!')->last());
+helper def : getAddReferenceValueLeft : Sequence(String) =
+	DIFF!AddReferenceValue.allInstances()->select(e|not e.oclIsUndefined())
+	->asSequence()->collect(e|e.leftElement.toString().split('!')->last());
+
+--param: Multiple
+--return: Sequence{'numberOfChoices', 'selectionWay'}
+--ERROR
+--helper def : getAttributesFromClass (param : String) : Sequence(String) =
+--	Ecore!EClassifier.allInstances()->select(e|e.name=param)
+--	->collect(e|e.eAllAttributes)->first()->collect(e|e.toString().split('!')->last());
+
+helper def : getAttributesFromClass (param : String) : Sequence(String) =
+	if Ecore!EClassifier.allInstances()->select(e|e.name=param).size()>0 then
+		Ecore!EClassifier.allInstances()->select(e|e.name=param)
+		->collect(e|e.eAllAttributes)->first()->collect(e|e.toString().split('!')->last())
+	else
+		Sequence{}
+	endif;
+	
+
+--param: attribute we want to know if is deleted: result15!question
+helper def : isDeletedinSubclass (param : String) : Boolean =
+	self.getRemoveModelElementLeft.indexOf(param)>0;
+--param: Multiple	
+helper def : attributesDeletedFromSubclass (param : String): Boolean =
+	let attributes : Sequence(String) =
+		self.getAttributesFromClass(param) in
+	attributes->iterate(p; y : Boolean = false |
+		if (self.isDeletedinSubclass(p))
+		then
+			true
+		else
+			false
+		endif
+	);
+--returns the attributes from subclasses that matches with superclasse´s
+helper def : getSubclassAttributes (param : String) : Sequence(String) =
+	let attributes : Sequence(String) =
+		self.getAttributesFromClass(param) in
+	attributes->iterate(p; y : Sequence(String) = Sequence{} |
+		
+		if (self.isDeletedinSubclass(p))
+		then
+			y.append(p.toString())
+		else
+			--y.append('')
+			y
+		endif
+	);
+--returns if param1 is in param2
+helper def : containsString (param1 : String, param2 : Sequence(String)) : Boolean =
+	param2->iterate(p; y : Boolean = false |
+		if p = param1 then
+			true
+		else
+			if y = true then
+				true
+			else
+				false
+			endif
+		endif
+	)
+	;
+--returns if the params are equal
+helper def : equalSequences (param : Sequence(String), param2 : Sequence(String)): Boolean =
+	param->asSet().symetricDifference(param2->asSet()).size()=0;
+
+--helper def : equalSequences (param1 : Sequence(String), param2 : Sequence(String)) : Boolean =
+--	param1->iterate(p; y : Boolean = true |
+--		if self.containsString(p, param2) then
+--			if y = true then
+--				true
+--			else
+--				false
+--			endif
+--		else
+--			false
+--		endif
+--	);
+--returns added classes that have deleted attributes
+helper def : AMEImplied_Extractsuperclass : Sequence(DIFF!AddModelElement) =
+	DIFF!AddModelElement.allInstances()
+	->select(e|e.rightElement->toString().split('!')->last()<>'<unnamed>')
+	->select(e|self.equalSequences(self.getSons(e.rightElement.toString().split('!')->last()),
+		self.getAddReferenceValueLeft))
+	->select(e|self.equalSequences(self.getAttributesFromClass(e.rightElement.toString().split('!')->last()),self.getRemoveModelElementLeft))->asSequence();
+
+--return the references of added class
+helper def : ARVImplied_Extractsuperclass : Sequence(DIFF!AddReferenceValue) =
+	if self.AMEImplied_Extractsuperclass.size()>0 then
+		DIFF!AddReferenceValue.allInstances()
+		-->select(e|e.rightElement->toString().split('!')->last()<>'<unnamed>')
+		->select(e|e.rightAddedTarget.toString().toString().split('!')->last()=
+		self.AMEImplied_Extractsuperclass->first().rightElement.toString().split('!')->last())->asSequence()
+	else
+		Sequence{}
+	endif;
+	
+--modif
+helper def : RMEImplied_Extractsuperclass : Sequence(DIFF!RemoveModelElement) =
+	let deleted : Sequence(DIFF!RemoveModelElement) =
+		DIFF!RemoveModelElement.allInstances() in
+	deleted->iterate(p; y : Sequence(DIFF!RemoveModelElement) = Sequence{} |
+		if self.AMEImplied_Extractsuperclass.size()>0 then
+			if (self.getSubclassAttributes(self.AMEImplied_Extractsuperclass->first().rightElement.toString().split('!')->last()).indexOf(p.leftElement.toString().split('!')->last())>0)
+			then
+				y.append(p)
+			else
+				--y.append('')
+				y
+			endif
+		else
+			--y.append('')
+			y
+		endif
+		
+	);
+
+--returns the DiffElements implied in ExtractSuperclass
+--param:
+helper def : diffElements_Extractsuperclass : Sequence(DIFF!DiffElement) =
+	self.ARVImplied_Extractsuperclass.union(self.RMEImplied_Extractsuperclass).union(self.AMEImplied_Extractsuperclass);
+
+helper def : firstAddedClass : String =
+	self.getAddModelElement->first();	
+
+--helper def : getSons (param : String) : Sequence(String) =
+--	Ecore!EClassifier.allInstances()->select(e|e.eSuperTypes.size()>0)
+--	->select(e|e.eSuperTypes->collect(e|e.toString()).indexOf(self.targetMMName.concat(param)) > 0)->asSequence()
+--	->collect(e|e.toString().split('!')->last());	
+
+helper def : classIsAdded : Boolean =
+	self.getAddModelElement.size() > 0;
+
+helper def : numberAddedClasses : Integer =
+	self.getAddModelElement.size();
+
+---------------------------------------------------------------------------------
+--            _                _ ___      _  _  _  _  _  _ ___
+--           |_|| ||  |   |\/||_  |  /_\ |_||_|| ||_||_ |_| |  \ /
+--           |  |_||_ |_  |  ||_  | /   \|  |\ |_||\ |_ |\  |   |
+--------------------------------------------------------------------------------
+
+helper def : getMoveModelElementLeftElement : Sequence(String) =
+	DIFF!MoveModelElement.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->collect(e|e.leftElement.toString().split('!')->last());
+
+helper def : getMoveModelElementRightTarget : Sequence(String) =
+	DIFF!MoveModelElement.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->collect(e|e.rightTarget.toString().split('!')->last());
+
+helper def : getMoveModelElementLeftTarget : Sequence(String) =
+	DIFF!MoveModelElement.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->collect(e|e.leftTarget.toString().split('!')->last());
+
+helper def : getSons (class : String) : Sequence(String) =
+	Ecore!EClassifier.allInstances()->select(e|e.eSuperTypes.size()>0)
+	->select(e|e.eSuperTypes->collect(e|e.toString().split('!')->last()).indexOf(class) > 0)
+	-->select(e|e.eSuperTypes->collect(e|e.toString()).indexOf(self.targetMMName.concat(class)) > 0)
+	->asSequence()->collect(e|e.toString().split('!')->last());
+
+
+helper def : isSon (origen : String, destino : String) : Boolean =
+	self.getSons(destino).indexOf(origen) > 0;
+
+helper def : MoveModelElementImplied : Sequence(DIFF!MoveModelElement) =
+	DIFF!MoveModelElement.allInstances()
+	->select(e|self.isSon(e.rightTarget.toString().split('!')->last(),
+		e.leftTarget.toString().split('!')->last()))->asSequence();
+
+---------------------------------------------------------------------------------
+--        __          ___  _               _  _        _   _
+--       |_  |   /_\   |  |_ |\ |   |_| | |_ |_| /_\  |_| |  |_| \ /
+--       |   |_ /   \  |  |_ | \|   | | | |_ |\ /   \ |\  |_ | |  |
+--------------------------------------------------------------------------------
+
+--(Class delete)
+helper def : getRemoveModelElement : Sequence(String) =
+	DIFF!RemoveModelElement.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.leftElement.toString().split('!')->last()<>'<unnamed>')
+	->collect(e|e.leftElement.toString().split('!')->last());
+--(add property)
+helper def : getAddModelElementRight : Sequence(String) =
+	DIFF!AddModelElement.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->collect(e|e.rightElement.toString().split('!')->last());
+helper def : getAddModelElementLeft : Sequence(String) =
+	DIFF!AddModelElement.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->collect(e|e.leftParent.toString().split('!')->last());
+--(delete reference)
+helper def : getRemoveReferenceValueLeft : Sequence(String) =
+	DIFF!RemoveReferenceValue.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->collect(e|e.leftRemovedTarget.toString().split('!')->last());
+helper def : getRemoveReferenceValueRight : Sequence(String) =
+	DIFF!RemoveReferenceValue.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->collect(e|e.rightElement.toString().split('!')->last());
+--ERROR
+--helper def : isAttributeOfClass (attribute : String, class : String) : Boolean =
+--	Ecore!EClassifier.allInstances()
+--	->select(e|e.name=class)
+--	->collect(e|e.eAllAttributes)->first()->collect(e|e.toString())
+--	->select(e|e=attribute).size()>0;
+	
+helper def : isAttributeOfClass (attribute : String, class : String) : Boolean =
+	if Ecore!EClassifier.allInstances()->select(e|e.name=class).size()>0 then
+		Ecore!EClassifier.allInstances()->select(e|e.name=class)
+		->collect(e|e.eAllAttributes)->first()
+		-->collect(e|e.toString())->select(e|e=attribute).size()>0
+		->select(e|e.name=attribute).size()>0
+	else
+		false
+	endif;
+	
+
+
+--param: attribute we want to know if is added: result13!question
+helper def : isAddedToSubclass (param : String) : Boolean =
+	self.getAddModelElementRight.indexOf(param)>0;
+--if the moved attribute is moved/copied to all of the sons
+--sons that have the attribute (in AssistantMVCEvol10)=number of sons
+--param: ExamElement
+helper def : attributesArePushed (param : String) : Boolean =
+	self.getSons(param)->select(e|self.equalSequences(self.getAttributesFromClass(e),
+		self.getAttributesFromClass(param))).size() = self.getSons(param).size();
+
+--return the removed class(ExamElement) which attributes are copied to the sons
+helper def : RMEImplied_Flattenhierarchy : Sequence(DIFF!RemoveModelElement) =
+	DIFF!RemoveModelElement.allInstances()
+	->select(e|e.leftElement.toString().split('!')->last()<>'<unnamed>')
+	->select(e|self.attributesArePushed(e.leftElement.toString().split('!')->last()))->asSequence();	
+
+--return the references of added class
+helper def : RRVImplied_Flattenhierarchy : Sequence(DIFF!RemoveReferenceValue) =
+	if self.RMEImplied_Flattenhierarchy.size()>0 then
+		DIFF!RemoveReferenceValue.allInstances()
+		->select(e|e.leftRemovedTarget.toString().split('!')->last()=
+		self.RMEImplied_Flattenhierarchy->first().leftElement.toString().split('!')->last())->asSequence()
+	else
+		Sequence{}
+	endif;
+	
+
+--param: 'Assistant!ExamElement'	
+--All the attributes of ExamElement are added to all the sons
+--ERROR
+helper def : AMEImplied_Flattenhierarchy : Sequence(DIFF!AddModelElement) =
+	if self.RMEImplied_Flattenhierarchy.size()>0 then
+		DIFF!AddModelElement.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+		->select(e|e.rightElement.toString().split('!')->last()<>'<unnamed>')
+		->select(e|self.getSons(self.RMEImplied_Flattenhierarchy->first().leftElement.toString().split('!')->last()).indexOf(e.leftParent)>=0)
+		->select(e|self.isAttributeOfClass(e.rightElement.toString().split('!')->last(),self.RMEImplied_Flattenhierarchy->first().leftElement.toString().split('!')->last()))
+	else
+		Sequence{}
+	endif;
+	
+	-->select(e|self.isAttributeOfClass(self.RMEImplied_Flattenhierarchy->first().leftElement.toString().split('!')->last(),e.rightElement.toString().split('!')->last()));
+
+--returns the DiffElements implied in ExtractSuperclass
+helper def : diffElements_Flattenhierarchy : Sequence(DIFF!DiffElement) =
+	self.RRVImplied_Flattenhierarchy.union(self.AMEImplied_Flattenhierarchy).union(self.RMEImplied_Flattenhierarchy);
+
+--if the moved attribute is moved/copied to all of the sons
+--sons that have the attribute (in AssistantMVCEvol10)=number of sons
+--param: ExamElement
+helper def : attributesArePushed (param : String) : Boolean =
+	self.getSons(param)->select(e|self.equalSequences(self.getAttributesFromClass(e),
+		self.getAttributesFromClass(param))).size() = self.getSons(param).size();
+
+----------------------------------------------------------------------------------
+--            _   ___  _       _ ___        _ ___       _          _  _
+--           |_ \/ |  |_| /_\ |   |    |\/||_  |  /_\  |  |   /_\ |_ |_ 
+--           |_ /\ |  |\ /   \|_  |    |  ||_  | /   \ |_ |_ /   \ _| _|
+---------------------------------------------------------------------------------
+
+--param: OEAttribute
+helper def : isDeletedinClass (param : String) : Boolean =
+	self.getRemoveModelElementLeft.indexOf(param)>0;
+
+--returns Sequence{'OEAttribute'}
+--param: NewOpenElement
+helper def : getClassAttributes (param : String) : Sequence(String) =
+	let attributes : Sequence(String) =
+		self.getAttributesFromClass(param) in
+	attributes->iterate(p; y : Sequence(String) = Sequence{} |
+		--p: OEAttribute
+		if (self.isDeletedinClass(p))
+		then
+			y.append(p)
+		else
+			--y.append('')
+			y
+		endif
+	);
+
+--return the added class
+--all the attributes of the added class belong to RemoveModelElementLeft
+helper def : AMEImplied_Extractmetaclass : Sequence(DIFF!AddModelElement) =
+	DIFF!AddModelElement.allInstances()
+	->select(e|self.getClassAttributes(e.rightElement.toString().split('!')->last())->asSet()
+	->intersection(self.getRemoveModelElementLeft).size()=
+	self.getClassAttributes(e.rightElement.toString().split('!')->last()).size())->asSequence();
+
+helper def : RMEImplied_Extractmetaclass : Sequence(DIFF!RemoveModelElement) =
+	if self.AMEImplied_Extractmetaclass.size()>0 then
+		let deleted : Sequence(DIFF!RemoveModelElement) =
+		DIFF!RemoveModelElement.allInstances() in
+		deleted->iterate(p; y : Sequence(DIFF!RemoveModelElement) = Sequence{} |
+		if (self.getClassAttributes(self.AMEImplied_Extractmetaclass->first().rightElement.toString().split('!')->last()).indexOf(p.leftElement.toString().split('!')->last())>0)
+		then
+			y.append(p)
+		else
+			--y.append('')
+			y
+		endif
+		)
+	else
+		Sequence{}
+	endif;
+	
+
+--returns the DiffElements implied in ExtractSuperclass
+helper def : diffElements_Extractmetaclass : Sequence(DIFF!DiffElement) =
+	self.AMEImplied_Extractmetaclass.union(self.RMEImplied_Extractmetaclass);
+
+----------------------------------------------------------------------------------
+--                           _             _ ___       _          _  _
+--           | |\ | |  ||\ ||_        |\/||_  |  /_\  |  |   /_\ |_ |_ 
+--           | | \| |_ || \||_        |  ||_  | /   \ |_ |_ /   \ _| _|
+---------------------------------------------------------------------------------
+helper def : indexInlineMetaclass : Integer = 1;
+
+--param: OpenElement
+--returns only "direct" sons, not from parents: Sequence{'OEAttribute'}
+helper def : getAttributesFromClassDirect (param : String) : Sequence(String) =
+	if Ecore!EClassifier.allInstances()->select(e|e.name=param).size()>0 then
+		Ecore!EClassifier.allInstances()->select(e|e.name=param)
+		->collect(e|e.eStructuralFeatures)->first()->collect(e|e.toString().split('!')->last())
+	else
+		Sequence{}
+	endif;
+
+--param: NewOpenElement
+--returns only "direct" sons, not from parents: Sequence{'OEAttribute'}
+helper def : getAttributesFromClass2 (param : String) : Sequence(String) =
+	if Ecore2!EClassifier.allInstances()->select(e|e.name=param).size()>0 then
+		Ecore2!EClassifier.allInstances()->select(e|e.name=param)
+		->collect(e|e.eStructuralFeatures)->first()->collect(e|e.toString().split('!')->last())
+	else
+		Sequence{}
+	endif;
+
+--return the added class
+--its attributes are the same as in the deleted class
+helper def : AMEImplied_Inlinemetaclass : Sequence(DIFF!AddModelElement) =
+	DIFF!AddModelElement.allInstances()
+	->select(e|e.rightElement.toString().split('!')->last()=self.getAddModelElement->first())
+	->select(e|self.equalSequences(self.getAttributesFromClass2(e.rightElement.toString().split('!')->last()),
+		self.getAttributesFromClassDirect(self.getRemoveModelElementLeft->first())))->asSequence();	
+
+--param: NewOpenElement	
+--attributes of the deleted class are those added in the new class
+helper def : RMEImplied_Inlinemetaclass : Sequence(DIFF!RemoveModelElement) =
+--	DIFF!RemoveModelElement.allInstances()
+--	->select(e|e.leftElement.toString().split('!')->last()<>'<unnamed>')
+--	->select(e|self.equalSequences(self.getAttributesFromClass(e.leftElement.toString().split('!')->last()),
+--		self.getAttributesFromClass2(self.AMEImplied_Inlinemetaclass->first().rightElement.toString().split('!')->last())))->asSequence();
+	if DIFF!RemoveModelElement.allInstances()
+	->select(e|self.getAttributesFromClassDirect(e.leftElement.toString().split('!')->last()).size()>0).size()>0
+	and self.AMEImplied_Inlinemetaclass.size()>0 then
+		DIFF!RemoveModelElement.allInstances()
+		->select(e|self.equalSequences(self.getAttributesFromClassDirect(e.leftElement.toString().split('!')->last()),
+		self.getAttributesFromClass2(self.AMEImplied_Inlinemetaclass->first().rightElement.toString().split('!')->last())))->asSequence()
+	else
+		Sequence{}
+	endif;
+	
+
+helper def : diffElements_Inlinemetaclass : Sequence(DIFF!DiffElement) =
+	self.AMEImplied_Inlinemetaclass.union(self.RMEImplied_Inlinemetaclass);
+
+---------------------------------------------------------------------------------------------------------
+--           _  _  ___          _  _   ___ _    _  _      _  _  _  ___   _
+--  ||\ ||_||_ |_|| |  /_\ |\ ||  |_    | | |  |  | ||\/||_|| ||_ | |  || ||\ |
+--  || \|| ||_ |\ | | /   \| \||_ |_    | |_|  |_ |_||  ||  |_| _|| |  ||_|| \|
+--------------------------------------------------------------------------------------------------------
+
+helper def : inheritance2composition : Boolean =
+	self.getAddModelElementLeft->first() = self.getRemoveReferenceValueRight->first() and
+	self.getRemoveReferenceValueLeft->first() = self.getAddModelElementRight->first();
+
+helper def : getFather (param : String) : Sequence(String) =
+	DIFF!RemoveReferenceValue.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.rightElement.toString().split('!')->last() = param)
+	->collect(e|e.leftRemovedTarget.toString().split('!')->last());
+
+--param: examElement
+--returns ExamElement
+helper def : getTargetClassOfRelation (param : String) : String =
+	Ecore!EReference.allInstances()->select(e|e.name=param)
+	->collect(e|e.eType.toString().split('!')->last());
+
+helper def : RRVImplied_Inheritancetocomposition : Sequence(DIFF!RemoveReferenceValue) =
+	DIFF!RemoveReferenceValue.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.reference.toString().split('!')->last() = 'eSuperTypes');
+
+helper def : AMEImplied_Inheritancetocomposition : Sequence(DIFF!AddModelElement) =
+	if self.RRVImplied_Inheritancetocomposition.size()>0 then
+		DIFF!AddModelElement.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+		->select(e|e.leftParent.toString().split('!')->last() = self.RRVImplied_Inheritancetocomposition->first().rightElement.toString().split('!')->last())
+		->select(e|self.getTargetClassOfRelation(e.rightElement.toString().split('!')->last())->first()=self.getRemoveReferenceValueLeft->first())
+	else
+		Sequence{}
+	endif;
+	
+
+helper def : diffElements_Inheritancetocomposition : Sequence(DIFF!DiffElement) =
+	self.RRVImplied_Inheritancetocomposition.union(self.AMEImplied_Inheritancetocomposition);
+--------------------------------------------------------------------------------------------------------
+--        _   _      _  _           _   _   _     _  _  _ ___   _  _
+--       | _ |_ |\ ||_ |_| /_\ |  |  / |_  |_ | ||_||_ |_| | | |_||_ 
+--       |_| |_ | \||_ |\ /   \|_ | /_ |_   _||_||  |_ |\  | | |  |_
+-------------------------------------------------------------------------------------------------------
+
+helper def : getRemoveReferenceValue : Sequence(String) =
+	DIFF!RemoveReferenceValue.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.reference.toString().split('!')->last() = 'eSuperTypes')
+	->collect(e|e.leftRemovedTarget.toString().split('!')->last());
+
+--rightAddedTarget from AddReferenceValue
+helper def : getAddReferenceValueRightAddedTarget : Sequence(String) =
+	DIFF!AddReferenceValue.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->collect(e|e.rightAddedTarget.toString().split('!')->last());
+--rightElement from AddReferenceValue
+helper def : getAddReferenceValueRightElement : Sequence(String) =
+	DIFF!AddReferenceValue.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->collect(e|e.rightElement.toString().split('!')->last());
+
+helper def : generalizeSupertype : Boolean =
+	self.getAddReferenceValueRightElement->first() = self.getRemoveReferenceValueRight->first() and
+	self.isFather(self.getAddReferenceValueRightAddedTarget->first()->toString(), self.getRemoveReferenceValueLeft->first()->toString());
+
+--helper def : getSons (param : String) : Sequence(String) =
+--	Ecore!EClassifier.allInstances()->select(e|e.eSuperTypes.size()>0)
+--	->select(e|e.eSuperTypes->collect(e|e.toString()).indexOf(self.targetMMName.concat(param)) > 0)
+--	->asSequence()->collect(e|e.toString().split('!')->last());
+
+--Observable is father of ExamItem
+helper def : isFather (param : String, param2 : String) : Boolean =
+	self.getSons(param).indexOf(param2)>0;
+
+helper def : RRVImplied_Generalizesupertype : Sequence(DIFF!RemoveReferenceValue) =
+	DIFF!RemoveReferenceValue.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.reference.toString().split('!')->last() = 'eSuperTypes');
+		
+helper def : ARVImplied_Generalizesupertype : Sequence(DIFF!AddReferenceValue) =
+	if self.RRVImplied_Generalizesupertype.size()>0 then
+		DIFF!AddReferenceValue.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+		->select(e|e.reference.toString().split('!')->last() = 'eSuperTypes')
+		->select(e|e.rightElement.toString().split('!')->last()=
+		self.RRVImplied_Generalizesupertype->first().rightElement.toString().split('!')->last())
+		->select(e|self.isFather(e.rightAddedTarget.toString().split('!')->last(),
+		self.RRVImplied_Generalizesupertype->first().leftRemovedTarget.toString().split('!')->last()))
+	else
+		Sequence{}
+	endif;
+	
+
+helper def : diffElements_Generalizesupertype : Sequence(DIFF!DiffElement) =
+	self.RRVImplied_Generalizesupertype.union(self.ARVImplied_Generalizesupertype);
+----------------------------------------------------------------------------------
+--                           _      _     _   _          _  _
+--           | |\ | |  ||\ ||_     |_ | ||_| |  |   /_\ |_ |_ 
+--           | | \| |_ || \||_      _||_||_| |_ |_ /   \ _| _|
+---------------------------------------------------------------------------------
+
+--params: metaclass: ExamElement, metaproperty: OEAttribute
+--returns if metaproperty is deleted in the deleted subclass of the metaclass
+helper def : isDeletedinSubclass_Inlinesubclass (metaclass : String, metaproperty : String) : Boolean =
+	self.getSons(metaclass).indexOf(self.getRemoveModelElement->first())>0 and
+	self.getAttributesFromClassDirect(self.getRemoveModelElement->first()).indexOf(metaproperty)>0;
+
+--param:ExamElement
+helper def : attributesDeletedFromSubclass_Inlinesubclass (param : String): Boolean =
+	let attributes : Sequence(String) =
+		--Sequence{'OEAttribute'}
+		self.getAddModelElementRight in
+	attributes->iterate(p; y : Boolean = false |
+		if (self.isDeletedinSubclass_Inlinesubclass(param, p))--param, p
+		then
+			true
+		else
+			false
+		endif
+	);
+helper def : AMEImplied_Inlinesubclass : Sequence(DIFF!AddModelElement) =
+	DIFF!AddModelElement.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|self.attributesDeletedFromSubclass_Inlinesubclass(e.leftParent.toString().split('!')->last()));
+		
+helper def : RMEImplied_Inlinesubclass : Sequence(DIFF!RemoveModelElement) =
+	if self.AMEImplied_Inlinesubclass.size()>0 then
+		DIFF!RemoveModelElement.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+		->select(e|self.isSon(e.leftElement.toString().split('!')->last(), self.AMEImplied_Inlinesubclass->first().leftParent.toString().split('!')->last()))
+	else
+		Sequence{}
+	endif;
+
+--param: ExamElement
+helper def : diffElements_Inlinesubclass : Sequence(DIFF!DiffElement) =
+	self.RMEImplied_Inlinesubclass.union(self.AMEImplied_Inlinesubclass);
+---------------------------------------------------------------------------------------------------------
+--   _  _  _  _  _  _      _  _  ___ _         _     ___  _   _  _
+--  |_||_ |_ |_ |_||_ |\ ||  |_   | | |   ||\ |_ |\ | | ||_ ||_ |_|
+--  |\ |_ |  |_ |\ |_ | \||_ |_   | |_|   ||/ |_ | \| | ||  ||_ |\
+---------------------------------------------------------------------------------------------------
+
+--params: View, Controller
+helper def : relatedClasses (class1 : String, class2 : String) : Boolean =
+	Ecore!EClassifier.allInstances()->select(e|e.name=class1)->first().eAllReferences
+	->select(e|e.eType.toString().split('!')->last()=class2).size()>0;
+
+helper def : RMEImplied_Referencetoidentifier : Sequence(DIFF!RemoveModelElement) =
+	DIFF!RemoveModelElement.allInstances()->select(e|not e.oclIsUndefined())->asSequence();
+
+--param: 'controller'
+helper def : AMEImplied_Referencetoidentifier : Sequence(DIFF!AddModelElement) =
+	if self.RMEImplied_Referencetoidentifier.size()>0 then
+		DIFF!AddModelElement.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+		->select(e|e.rightElement.toString().split('!')->last()=self.RMEImplied_Referencetoidentifier->first().leftElement.toString().split('!')->last())
+		->select(e|e.leftParent.toString().split('!')->last()=
+		self.RMEImplied_Referencetoidentifier->first().rightParent.toString().split('!')->last() or
+		self.relatedClasses(self.RMEImplied_Referencetoidentifier->first().rightParent.toString().split('!')->last(),e.leftParent.toString().split('!')->last()))
+		
+	else
+		Sequence{}
+	endif;
+	
+
+--param: 'controller'
+helper def : diffElements_Referencetoidentifier : Sequence(DIFF!DiffElement) =
+	thisModule.RMEImplied_Referencetoidentifier.union(self.AMEImplied_Referencetoidentifier);
+
+---------------------------------------------------------------------------------------------------------
+--     _  _     ___      _  _  _  _  _  _      _  _   
+--    |_ |_||  | |      |_||_ |_ |_ |_||_ |\ ||  |_  
+--     _||  |_ | |      |\ |_ |  |_ |\ |_ | \||_ |_  
+---------------------------------------------------------------------------------------------------
+
+--param: examItemController
+helper def : getTarget (class : String) : String =
+	Ecore!EReference.allInstances()->select(e|e.name=class)
+	->collect(e|e.eType.toString().split('!')->last())->first();
+
+--helper def : isSon (son : String, father : String) : Sequence(String) =
+--	Ecore!EClassifier.allInstances()->select(e|e.eSuperTypes.size()>0)
+--	->select(e|e.eSuperTypes->collect(e|e.toString()).indexOf(self.targetMM.concat(father)) > 0)
+--	->asSequence()->select(e|e.toString().substring(self.MMSize,e.toString().size())=son).size()>0;
+
+helper def : UAImplied_Splitreference : Sequence(DIFF!UpdateAttribute) =
+	DIFF!UpdateAttribute.allInstances()->select(e|not e.oclIsUndefined())->asSequence();
+--param: 'controller'
+helper def : UURVImplied_Splitreference : Sequence(DIFF!UpdateUniqueReferenceValue) =
+	if self.UAImplied_Splitreference.size()>0 then
+		DIFF!UpdateUniqueReferenceValue.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+		->select(e|e.leftElement.toString().split('!')->last()=self.UAImplied_Splitreference->first().leftElement.toString().split('!')->last())
+		->select(e|self.isSon(e.leftTarget.toString().split('!')->last(),e.rightTarget.toString().split('!')->last()))
+	else
+		Sequence{}
+	endif;
+	
+--param: 'controller'
+helper def : AMEImplied_Splitreference : Sequence(DIFF!AddModelElement) =
+	if self.UURVImplied_Splitreference.size()>0 then
+		DIFF!AddModelElement.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+		->select(e|self.isSon(self.getTarget(e.rightElement.toString().split('!')->last())
+		,self.UURVImplied_Splitreference->first().rightTarget.toString().split('!')->last()))
+	else
+		Sequence{}
+	endif;
+	
+	
+helper def : diffElements_Splitreference : Sequence(DIFF!DiffElement) =
+	self.UAImplied_Splitreference.union(self.UURVImplied_Splitreference).union(self.AMEImplied_Splitreference);
+--------------------------------------------------------------------------------------------------
+--  _  _  _  _  _  _ ___           _  _  _   _
+-- |_||_|| ||_||_ |_| | \ /   |\/||_ |_|| _ |_
+-- |  |\ |_||  |_ |\  |  |    |  ||_ |\ |_| |_
+---------------------------------------------------------------------------------------------------
+
+helper def : getUpdateAttributeRight : Sequence(String) =
+	DIFF!UpdateAttribute.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->collect(e|e.rightElement.toString().split('!')->last());
+
+helper def : getUpdateAttributeLeft : Sequence(String) =
+	DIFF!UpdateAttribute.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->collect(e|e.leftElement.toString().split('!')->last());
+
+--de aquí sacaremos el parametro 'fontName'
+helper def : RMEImplied_Propertymerge : Sequence(DIFF!RemoveModelElement) =
+	DIFF!RemoveModelElement.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|self.hasUpdateAttribute(e.leftElement.toString().split('!')->last()));
+
+helper def : UAImplied_Propertymerge  : Sequence(DIFF!AddModelElement) =
+	if self.RMEImplied_Propertymerge.size()>0 then
+		DIFF!UpdateAttribute.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+		->select(e|e.rightElement.toString().split('!')->last().indexOf(e.leftElement.toString().split('!')->last())>0)
+		->select(e|e.rightElement.toString().substring(self.EcoreSize, e.rightElement.toString().size()).indexOf(self.RMEImplied_Propertymerge->first().leftElement.toString().split('!')->last())>0)
+	else
+		Sequence{}
+	endif;
+	
+
+helper def : diffElements_Propertymerge : Sequence(DIFF!DiffElement) =
+	self.RMEImplied_Propertymerge.union(self.UAImplied_Propertymerge);
+	
+
+--param: fontName
+helper def : hasUpdateAttribute (param : String): Boolean =
+	let attributes : Sequence(String) =
+		self.getUpdateAttributeRight in
+	attributes->iterate(p; y : Boolean = false |
+		if (p.indexOf('+')>0) then
+			if (p.split('\\+')->first()=param or p.split('\\+')->last()=param)
+			then
+				true
+			else
+				false
+			endif
+		else
+			false
+		endif
+	);
+--------------------------------------------------------------------------------------------------
+--   _         _  _        _  _  _   _
+--  |  |  /_\ |_ |_   |\/||_ |_|| _ |_
+--  |_ |_/   \ _| _|  |  ||_ |\ |_| |_
+---------------------------------------------------------------------------------------------------
+
+--de aquí sacaremos el parametro 'OpenElement'
+helper def : RMEImplied_Classmerge : Sequence(DIFF!RemoveModelElement) =
+	DIFF!RemoveModelElement.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|self.hasUpdateAttribute_Classmerge(e.leftElement.toString().split('!')->last()));
+
+helper def : UAImplied_Classmerge : Sequence(DIFF!AddModelElement) =
+	if self.RMEImplied_Classmerge.size()>0 then
+		DIFF!UpdateAttribute.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+		->select(e|e.rightElement.toString().split('!')->last().indexOf(e.leftElement.toString().split('!')->last())>0)
+		->select(e|e.rightElement.toString().split('!')->last().split('\\_')->first()=self.RMEImplied_Classmerge->first().leftElement.toString().split('!')->last() or e.rightElement.toString().split('!')->last().split('\\_')->last()=self.RMEImplied_Classmerge->first().leftElement.toString().split('!')->last())
+	else
+		Sequence{}
+	endif;
+	
+
+helper def : diffElements_Classmerge : Sequence(DIFF!DiffElement) =
+	self.RMEImplied_Classmerge.union(self.UAImplied_Classmerge);
+
+--param: 'OpenElement'
+helper def : hasUpdateAttribute_Classmerge (param : String): Boolean =
+	let attributes : Sequence(String) =
+		self.getUpdateAttributeRight in
+	attributes->iterate(p; y : Boolean = false |
+		if (p.indexOf('_')>0) then
+			if (p.split('\\_')->first()=param or p.split('\\_')->last()=param)
+			then
+				true
+			else
+				false
+			endif
+		else
+			false
+		endif
+	);
+---------------------------------------------------------------------------------------------------------
+--     _  _     ___      _         _  _
+--    |_ |_||  | |      |  |  /_\ |_ |_
+--     _||  |_ | |      |_ |_/   \ _| _|
+---------------------------------------------------------------------------------------------------
+
+--de aquí sacaremos el parametro 'OpenElement'
+helper def : UAImplied_Splitclass : Sequence(DIFF!UpdateAttribute) =
+	DIFF!UpdateAttribute.allInstances()->select(e|not e.oclIsUndefined())->asSequence()
+	->select(e|e.rightElement.toString().split('!')->last().split('\\_')->first()
+		=e.leftElement.toString().split('!')->last());
+--param: OpenElement
+helper def : AMEImplied_Splitclass : Sequence(DIFF!AddModelElement) =
+	if self.UAImplied_Splitclass.size()>0 then
+		DIFF!AddModelElement.allInstances()->select(e|not e.oclIsUndefined())
+		->select(e|e.rightElement.toString().split('!')->last().split('\\_')->first()
+		=self.UAImplied_Splitclass->first().leftElement.toString().split('!')->last())
+	else
+		Sequence{}
+	endif;
+	
+helper def : splittedClasses : Sequence(String) =
+	if self.UAImplied_Splitclass.size()>0 and self.AMEImplied_Splitclass.size()>0 then
+		Sequence{self.UAImplied_Splitclass->first().rightElement->toString().split('!')->last(), 
+		self.AMEImplied_Splitclass->first().rightElement->toString().split('!')->last()}
+	else
+		Sequence{}
+	endif;
+	
+
+helper def : RMEImplied_Splitclass : Sequence(DIFF!RemoveModelElement) =
+	if self.splittedClasses.size()>0 then
+		DIFF!RemoveModelElement.allInstances()->select(e|not e.oclIsUndefined())
+		->select(e|self.containsString(e.rightParent.toString().split('!')->last(),
+		self.splittedClasses))
+	else
+		Sequence{}
+	endif;
+	
+--param: OpenElement	
+helper def : diffElements_Splitclass : Sequence(DIFF!DiffElement) =
+	self.AMEImplied_Splitclass.union(self.UAImplied_Splitclass).union(self.RMEImplied_Splitclass);
+
+--#############################################################################
+--############################################################################
+--#######################RULES################################################
+--#############################################################################
+--#############################################################################
+rule Simple_to_complex {
+	from
+		s : DIFF!DiffModel
+		
+	to
+		t : diffExtended!DiffModel (
+			left <- s.left,
+			origin <- s.origin,
+			right <- s.right,
+			ownedElements <- s.ownedElements,
+			complexChanges <- Sequence{}
+			
+		)
+		
+		do {
+--			self.AMEImplied_Extractsuperclass.size()->toString().println();
+--			self.ARVImplied_Extractsuperclass.size()->toString().println();
+--			self.RMEImplied_Extractsuperclass.size()->toString().println();
+
+--			self.RMEImplied_Flattenhierarchy.size()->toString().println();
+--			self.RRVImplied_Flattenhierarchy.size()->toString().println();
+--			self.AMEImplied_Flattenhierarchy.size()->toString().println();
+
+--			self.AMEImplied_Extractmetaclass.size()->toString().println();
+--			self.RMEImplied_Extractmetaclass.size()->toString().println();
+
+--			self.AMEImplied_Inlinemetaclass.size()->toString().println();
+--			self.RMEImplied_Inlinemetaclass.size()->toString().println();
+
+--			self.RRVImplied_Inheritancetocomposition.size()->toString().println();
+--			self.AMEImplied_Inheritancetocomposition.size()->toString().println();
+
+--			self.RMEImplied_Propertymerge.size()->toString().println();
+--			self.UAImplied_Propertymerge.size()->toString().println();
+
+--TODO: Delete elses. Extract metaclass
+			
+			if (self.RMEImplied_Classmerge.size()>0 and
+				self.UAImplied_Classmerge.size()>0){
+						t.complexChanges <- t.complexChanges->append(self.ComplexChange_Classmerge(t.complexChanges));
+			}
+			if (self.RMEImplied_Propertymerge.size()>0 and
+				self.UAImplied_Propertymerge.size()>0){
+						t.complexChanges <- t.complexChanges->append(self.ComplexChange_Propertymerge(t.complexChanges));
+			}
+			if (self.MoveModelElementImplied.size()>0){
+				t.complexChanges <- t.complexChanges->append(self.ComplexChange_Pullmetaproperty(t.complexChanges));
+			}
+			if (self.RRVImplied_Generalizesupertype.size()>0 and
+				self.ARVImplied_Generalizesupertype.size()>0){
+						t.complexChanges <- t.complexChanges->append(self.ComplexChange_Generalizesupertype(t.complexChanges));
+			}
+			if (self.UAImplied_Splitreference.size()>0 and 
+				self.UURVImplied_Splitreference.size()>0 and
+				self.AMEImplied_Splitreference.size()>0){
+				t.complexChanges <- t.complexChanges->append(self.ComplexChange_Splitreference(t.complexChanges));
+			}
+			
+			if (self.AMEImplied_Extractsuperclass.size()>0 and 
+				self.ARVImplied_Extractsuperclass.size()>0 and
+				self.RMEImplied_Extractsuperclass.size()>0){
+				t.complexChanges <- t.complexChanges->append(self.ComplexChange_Extractsuperclass(t.complexChanges));
+			}else{
+				if (self.RMEImplied_Flattenhierarchy.size()>0 and
+				self.RRVImplied_Flattenhierarchy.size()>0 and
+				self.AMEImplied_Flattenhierarchy.size()>0){
+					t.complexChanges <- t.complexChanges->append(self.ComplexChange_Flattenhierarchy(t.complexChanges));
+				}else{
+					if (self.AMEImplied_Inlinemetaclass.size()>0 and
+					self.RMEImplied_Inlinemetaclass.size()>0){
+						t.complexChanges <- t.complexChanges->append(self.ComplexChange_Inlinemetaclass(t.complexChanges));
+					}else
+						if (self.RRVImplied_Inheritancetocomposition.size()>0 and
+							self.AMEImplied_Inheritancetocomposition.size()>0){
+							t.complexChanges <- t.complexChanges->append(self.ComplexChange_Inheritancetocomposition(t.complexChanges));
+						}else{
+							if (self.AMEImplied_Inlinesubclass.size()>0 and
+								self.RMEImplied_Inlinesubclass.size()>0){
+								t.complexChanges <- t.complexChanges->append(self.ComplexChange_Inlinesubclass(t.complexChanges));
+							}else{
+								if (self.RMEImplied_Referencetoidentifier.size()>0 and
+								self.AMEImplied_Referencetoidentifier.size()>0){
+									t.complexChanges <- t.complexChanges->append(self.ComplexChange_Referencetoidentifier(t.complexChanges));
+								}else{
+									if (self.UAImplied_Splitclass.size()>0 and 
+									self.AMEImplied_Splitclass.size()>0 and
+									self.RMEImplied_Splitclass.size()>0){
+										t.complexChanges <- t.complexChanges->append(self.ComplexChange_Splitclass(t.complexChanges));
+									}else{
+										if (self.AMEImplied_Extractmetaclass.size()>0 and
+										self.RMEImplied_Extractmetaclass.size()>0){
+											t.complexChanges <- t.complexChanges->append(self.ComplexChange_Extractmetaclass(t.complexChanges));
+										}
+									}
+									
+								}
+								
+							}
+							
+						}
+						
+					}
+					
+				}
+				
+			}
+			
+				
+	
+		
+}
+
+lazy rule ComplexChange_Extractsuperclass {
+	from s : diffExtended!ComplexChange
+	to
+		t : diffExtended!ComplexChange ( 
+			impact <- #non_breaking,
+			changeType <- #Extract_superclass,
+			atomicChanges <- self.diffElements_Extractsuperclass
+			
+		)
+		do{
+			'Extract superclass'.println();
+			self.getAddModelElement->toString().println();
+			self.getRemoveModelElementRight->toString().println();
+			self.getRemoveModelElementLeft->toString().println();
+			self.getAddReferenceValueRight->toString().println();
+			self.getAddReferenceValueLeft->toString().println();
+			self.AMEImplied_Extractsuperclass->toString().println();
+			
+		}
+}
+
+lazy rule ComplexChange_Pullmetaproperty {
+	from s : diffExtended!ComplexChange
+	to
+		t : diffExtended!ComplexChange ( 
+			impact <- #non_breaking,
+			changeType <- #Pull_metaproperty,
+			atomicChanges <- self.MoveModelElementImplied
+			
+		)
+		do{
+			'Pull metaproperty'.println();
+			self.MoveModelElementImplied->toString().println();
+			
+		}
+}
+
+lazy rule ComplexChange_Flattenhierarchy {
+	from s : diffExtended!ComplexChange
+	to
+		t : diffExtended!ComplexChange ( 
+			impact <- #resolvable,
+			changeType <- #Flatten_hierarchy,
+			atomicChanges <- self.diffElements_Flattenhierarchy
+			
+		)
+		do{
+			'Flatten hierarchy'.println();
+			self.getRemoveModelElement->toString().println();
+			self.getAddModelElementRight->toString().println();
+			self.getAddModelElementLeft->toString().println();
+			self.getRemoveReferenceValueLeft->toString().println();
+			self.getRemoveReferenceValueRight->toString().println();
+			self.diffElements_Flattenhierarchy->toString().println();
+			
+			
+		}
+}
+
+lazy rule ComplexChange_Extractmetaclass {
+	from s : diffExtended!ComplexChange
+	to
+		t : diffExtended!ComplexChange ( 
+			impact <- #resolvable,
+			changeType <- #Extract_metaclass,
+			atomicChanges <- self.diffElements_Extractmetaclass
+			
+		)
+		do{
+			'Extract metaclass'.println();
+			self.getAddModelElement->toString().println();
+			self.getRemoveModelElementRight->toString().println();
+			self.getRemoveModelElementLeft->toString().println();
+			self.AMEImplied_Extractmetaclass->toString().println();
+			self.RMEImplied_Extractmetaclass->toString().println();
+			
+			
+		}
+}
+
+lazy rule ComplexChange_Inlinemetaclass {
+	from s : diffExtended!ComplexChange
+	to
+		t : diffExtended!ComplexChange ( 
+			impact <- #non_breaking,
+			changeType <- #Inline_metaclass,
+			atomicChanges <- self.diffElements_Inlinemetaclass
+			
+		)
+		do{
+			'Inline metaclass'.println();
+				self.indexInlineMetaclass = 1;
+			for (it in self.getAttributesFromClass2(self.AMEImplied_Inlinemetaclass->first().rightElement.toString().split('!')->last())){
+				t.atomicChanges<-t.atomicChanges->append(thisModule.AddMoveMetaproperty(t.atomicChanges));
+				self.indexInlineMetaclass = self.indexInlineMetaclass + 1;
+			}
+			
+			self.AMEImplied_Inlinemetaclass->toString().println();
+			self.RMEImplied_Inlinemetaclass->toString().println();
+			
+			
+		}
+}
+
+lazy rule AddMoveMetaproperty {
+	from
+		s : diffExtended!MoveMetaproperty
+	
+	to
+		de : diffExtended!MoveMetaproperty (
+			metaproperty <- self.getAttributesFromClass2(self.AMEImplied_Inlinemetaclass->first().rightElement.toString().split('!')->last()).at(self.indexInlineMetaclass),
+			targetClass <- self.AMEImplied_Inlinemetaclass->first().rightElement.toString().split('!')->last(),
+			sourceClass <- self.RMEImplied_Inlinemetaclass->first().leftElement.toString().split('!')->last()
+		)
+}
+
+lazy rule ComplexChange_Inheritancetocomposition {
+	from s : diffExtended!ComplexChange
+	to
+		t : diffExtended!ComplexChange ( 
+			impact <- #resolvable,
+			changeType <- #Inheritance_to_composition,
+			atomicChanges <- self.diffElements_Inheritancetocomposition
+			
+		)
+		do{
+			'Inheritance to composition'.println();
+			self.RRVImplied_Inheritancetocomposition->toString().println();
+			self.AMEImplied_Inheritancetocomposition->toString().println();
+			
+			
+		}
+}
+
+lazy rule ComplexChange_Generalizesupertype {
+	from s : diffExtended!ComplexChange
+	to
+		t : diffExtended!ComplexChange ( 
+			impact <- #resolvable,
+			changeType <- #Generalize_supertype,
+			atomicChanges <- self.diffElements_Generalizesupertype
+			
+		)
+		do{
+			'Generalize supertype'.println();
+			self.RRVImplied_Generalizesupertype->toString().println();
+			self.ARVImplied_Generalizesupertype->toString().println();
+			
+			
+		}
+}
+lazy rule ComplexChange_Inlinesubclass {
+	from s : diffExtended!ComplexChange
+	to
+		t : diffExtended!ComplexChange ( 
+			impact <- #resolvable,
+			changeType <- #Inline_subclass,
+			atomicChanges <- self.diffElements_Inlinesubclass
+			
+		)
+		do{
+			'Inline subclass'.println();
+			self.RMEImplied_Inlinesubclass->toString().println();
+			self.AMEImplied_Inlinesubclass->toString().println();
+			
+			
+		}
+}
+lazy rule ComplexChange_Referencetoidentifier {
+	from s : diffExtended!ComplexChange
+	to
+		t : diffExtended!ComplexChange ( 
+			impact <- #resolvable,
+			changeType <- #Reference_to_identifier,
+			atomicChanges <- self.diffElements_Referencetoidentifier
+			
+		)
+		do{
+			'Inline subclass'.println();
+			self.RMEImplied_Referencetoidentifier->toString().println();
+			self.AMEImplied_Referencetoidentifier->toString().println();
+			
+			
+		}
+}
+lazy rule ComplexChange_Splitreference {
+	from s : diffExtended!ComplexChange
+	to
+		t : diffExtended!ComplexChange ( 
+			impact <- #resolvable,
+			changeType <- #Split_reference_by_type,
+			atomicChanges <- self.diffElements_Splitreference
+			
+		)
+		do{
+			'Split reference'.println();
+			self.UAImplied_Splitreference->toString().println();
+			self.UURVImplied_Splitreference->toString().println();
+			self.AMEImplied_Splitreference->toString().println();
+			
+		}
+}
+lazy rule ComplexChange_Propertymerge {
+	from s : diffExtended!ComplexChange
+	to
+		t : diffExtended!ComplexChange ( 
+			impact <- #resolvable,
+			changeType <- #Property_merge,
+			atomicChanges <- self.diffElements_Propertymerge
+			
+		)
+		do{
+			'Property merge'.println();
+			self.RMEImplied_Propertymerge->toString().println();
+			self.UAImplied_Propertymerge->toString().println();
+			
+			
+		}
+}
+lazy rule ComplexChange_Classmerge {
+	from s : diffExtended!ComplexChange
+	to
+		t : diffExtended!ComplexChange ( 
+			impact <- #resolvable,
+			changeType <- #Class_merge,
+			atomicChanges <- self.diffElements_Classmerge
+			
+		)
+		do{
+			'Class merge'.println();
+			self.RMEImplied_Classmerge->toString().println();
+			self.UAImplied_Classmerge->toString().println();
+			
+			
+		}
+}
+lazy rule ComplexChange_Splitclass {
+	from s : diffExtended!ComplexChange
+	to
+		t : diffExtended!ComplexChange ( 
+			impact <- #resolvable,
+			changeType <- #Split_class,
+			atomicChanges <- self.diffElements_Splitclass
+			
+		)
+		do{
+			'Split class'.println();
+			self.UAImplied_Splitclass->toString().println();
+			self.AMEImplied_Splitclass->toString().println();
+			self.RMEImplied_Splitclass->toString().println();
+			
+		}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+rule GenericDiffElement {
+	from
+		s:DIFF!GenericDiffElement(s.oclIsTypeOf(DIFF!GenericDiffElement))
+	to
+		t:diffExtended!DiffModel(
+			leftElement <- s.leftElement,
+			rightElement <- s.rightElement,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule ConflictingDiffElement {
+	from
+		s:DIFF!ConflictingDiffElement(s.oclIsTypeOf(DIFF!ConflictingDiffElement))
+	to
+		t:diffExtended!ConflictingDiffElement(
+			leftParent <- s.leftParent,
+			rightParent <- s.rightParent,
+			originElement <- s.originElement,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule ModelInputSnapshot {
+	from
+		s:DIFF!ModelInputSnapshot(s.oclIsTypeOf(DIFF!DiffGroup))
+	to
+		t:diffExtended!ModelInputSnapshot(
+			date <- s.date,
+			diff <- s.diff,
+			match <- s.match
+		)
+}
+
+rule ModelElementChange {
+	from
+		s:DIFF!ModelElementChange(s.oclIsTypeOf(DIFF!ModelElementChange))
+	to
+		t:diffExtended!ModelElementChange(
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+rule ModelElementChangeLeftTarget {
+	from
+		s:DIFF!ModelElementChangeLeftTarget(s.oclIsTypeOf(DIFF!ModelElementChangeLeftTarget))
+	to
+		t:diffExtended!ModelElementChangeLeftTarget(
+			rightParent <- s.rightParent,
+			leftElement <- s.leftElement,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+rule ModelElementChangeRightTarget {
+	from
+		s:DIFF!ModelElementChangeRightTarget(s.oclIsTypeOf(DIFF!ModelElementChangeRightTarget))
+	to
+		t:diffExtended!ModelElementChangeRightTarget(
+			leftParent <- s.leftParent,
+			rightElement <- s.rightElement,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule AddModelElement {
+	from
+		s:DIFF!AddModelElement(s.oclIsTypeOf(DIFF!AddModelElement))
+	to
+		t:diffExtended!AddModelElement(
+			leftParent <- s.leftParent,
+			rightElement <- s.rightElement,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule RemoteAddModelElement {
+	from
+		s:DIFF!RemoteAddModelElement(s.oclIsTypeOf(DIFF!RemoteAddModelElement))
+	to
+		t:diffExtended!RemoteAddModelElement(
+			rightParent <- s.rightParent,
+			leftElement <- s.leftElement,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule RemoveModelElement {
+	from
+		s:DIFF!RemoveModelElement(s.oclIsTypeOf(DIFF!RemoveModelElement))
+	to
+		t:diffExtended!RemoveModelElement(
+			rightParent <- s.rightParent,
+			leftElement <- s.leftElement,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+		
+		)
+}
+
+rule RemoteRemoveModelElement {
+	from
+		s:DIFF!RemoteRemoveModelElement(s.oclIsTypeOf(DIFF!RemoteRemoveModelElement))
+	to
+		t:diffExtended!RemoteRemoveModelElement(
+			leftParent <- s.leftParent,
+			rightElement <- s.rightElement,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+		
+		)
+}
+
+
+
+rule MoveModelElement {
+	from
+		s:DIFF!MoveModelElement
+	to
+		t:diffExtended!MoveModelElement(
+			leftTarget <- s.leftTarget,
+			rightTarget <- s.rightTarget,
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule UpdateModelElement {
+	from
+		s:DIFF!UpdateModelElement(s.oclIsTypeOf(DIFF!UpdateModelElement))
+	to
+		t:diffExtended!UpdateModelElement(
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+		
+		)
+}
+
+
+
+rule RemoteMoveModelElement {
+	from
+		s:DIFF!RemoteMoveModelElement(s.oclIsTypeOf(DIFF!RemoteMoveModelElement))
+	to
+		t:diffExtended!RemoteMoveModelElement(
+			leftTarget <- s.leftTarget,
+			rightTarget <- s.rightTarget,
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+		
+		)
+}
+
+rule AttributeChange {
+	from
+		s:DIFF!AttributeChange(s.oclIsTypeOf(DIFF!AttributeChange))
+	to
+		t:diffExtended!AttributeChange(
+			leftElement <- s.leftElement,
+			rightElement <- s.rightElement,
+			attribute <- s.attribute,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+		
+		)
+}
+
+rule AttributeChangeLeftTarget {
+	from
+		s:DIFF!AttributeChangeLeftTarget(s.oclIsTypeOf(DIFF!AttributeChangeLeftTarget))
+	to
+		t:diffExtended!AttributeChangeLeftTarget(
+			leftTarget <- s.leftTarget,
+			leftElement <- s.leftElement,
+			rightElement <- s.rightElement,
+			attribute <- s.attribute,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule AttributeChangeRightTarget {
+	from
+		s:DIFF!AttributeChangeRightTarget(s.oclIsTypeOf(DIFF!AttributeChangeRightTarget))
+	to
+		t:diffExtended!AttributeChangeRightTarget(
+			rightTarget <- s.rightTarget,
+			leftElement <- s.leftElement,
+			rightElement <- s.rightElement,
+			attribute <- s.attribute,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule AddAttribute {
+	from
+		s:DIFF!AddAttribute(s.oclIsTypeOf(DIFF!AddAttribute))
+	to
+		t:diffExtended!AddAttribute(
+			rightTarget <- s.rightTarget,
+			leftElement <- s.leftElement,
+			rightElement <- s.rightElement,
+			attribute <- s.attribute,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule RemoteAddAttribute {
+	from
+		s:DIFF!RemoteAddAttribute(s.oclIsTypeOf(DIFF!RemoteAddAttribute))
+	to
+		t:diffExtended!RemoteAddAttribute(
+			leftTarget <- s.leftTarget,
+			leftElement <- s.leftElement,
+			rightElement <- s.rightElement,
+			attribute <- s.attribute,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule RemoveAttribute {
+	from
+		s:DIFF!RemoveAttribute(s.oclIsTypeOf(DIFF!RemoveAttribute))
+	to
+		t:diffExtended!RemoveAttribute(
+			leftTarget <- s.leftTarget,
+			leftElement <- s.leftElement,
+			rightElement <- s.rightElement,
+			attribute <- s.attribute,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule RemoteRemoveAttribute {
+	from
+		s:DIFF!RemoteRemoveAttribute(s.oclIsTypeOf(DIFF!RemoteRemoveAttribute))
+	to
+		t:diffExtended!RemoteRemoveAttribute(
+			rightTarget <- s.rightTarget,
+			leftElement <- s.leftElement,
+			rightElement <- s.rightElement,
+			attribute <- s.attribute,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule UpdateAttribute {
+	from
+		s:DIFF!UpdateAttribute(s.oclIsTypeOf(DIFF!UpdateAttribute))
+	to
+		t:diffExtended!UpdateAttribute(
+			leftElement <- s.leftElement,
+			rightElement <- s.rightElement,
+			attribute <- s.attribute,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule RemoteUpdateAttribute {
+	from
+		s:DIFF!RemoteUpdateAttribute(s.oclIsTypeOf(DIFF!RemoteUpdateAttribute))
+	to
+		t:diffExtended!RemoteUpdateAttribute(
+			leftElement <- s.leftElement,
+			rightElement <- s.rightElement,
+			attribute <- s.attribute,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule ReferenceChange {
+	from
+		s:DIFF!ReferenceChange(s.oclIsTypeOf(DIFF!ReferenceChange))
+	to
+		t:diffExtended!ReferenceChange(
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			leftTarget <- s.leftTarget,
+			reference <- s.reference,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+			
+		)
+}
+
+rule ReferenceChangeLeftTarget {
+	from
+		s:DIFF!ReferenceChangeLeftTarget(s.oclIsTypeOf(DIFF!ReferenceChangeLeftTarget))
+	to
+		t:diffExtended!ReferenceChangeLeftTarget(
+			leftRemovedTarget <- s.leftRemovedTarget,
+			rightRemovedTarget <- s.rightRemovedTarget,
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			leftTarget <- s.leftTarget,
+			reference <- s.reference,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule ReferenceChangeRightTarget {
+	from
+		s:DIFF!ReferenceChangeRightTarget(s.oclIsTypeOf(DIFF!ReferenceChangeRightTarget))
+	to
+		t:diffExtended!ReferenceChangeRightTarget(
+			rightAddedTarget <- s.rightAddedTarget,
+			leftAddedTarget <- s.leftAddedTarget,
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			leftTarget <- s.leftTarget,
+			reference <- s.reference,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule AddReferenceValue {
+	from
+		s:DIFF!AddReferenceValue(s.oclIsTypeOf(DIFF!AddReferenceValue))
+	to
+		t:diffExtended!AddReferenceValue(
+			rightAddedTarget <- s.rightAddedTarget,
+			leftAddedTarget <- s.leftAddedTarget,
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			--leftTarget <- s.leftTarget,
+			reference <- s.reference,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule RemoteAddReferenceValue {
+	from
+		s:DIFF!RemoteAddReferenceValue(s.oclIsTypeOf(DIFF!RemoteAddReferenceValue))
+	to
+		t:diffExtended!RemoteAddReferenceValue(
+			leftRemovedTarget <- s.leftRemovedTarget,
+			rightRemovedTarget <- s.rightRemovedTarget,
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			leftTarget <- s.leftTarget,
+			reference <- s.reference,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule RemoveReferenceValue {
+	from
+		s:DIFF!RemoveReferenceValue(s.oclIsTypeOf(DIFF!RemoveReferenceValue))
+	to
+		t:diffExtended!RemoveReferenceValue(
+			leftRemovedTarget <- s.leftRemovedTarget,
+			rightRemovedTarget <- s.rightRemovedTarget,
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			--leftTarget <- s.leftTarget,
+			reference <- s.reference,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule RemoteRemoveReferenceValue {
+	from
+		s:DIFF!RemoteRemoveReferenceValue(s.oclIsTypeOf(DIFF!RemoteRemoveReferenceValue))
+	to
+		t:diffExtended!RemoteRemoveReferenceValue(
+			rightAddedTarget <- s.rightAddedTarget,
+			leftAddedTarget <- s.leftAddedTarget,
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			leftTarget <- s.leftTarget,
+			reference <- s.reference,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule UpdateReference {
+	from
+		s:DIFF!UpdateReference(s.oclIsTypeOf(DIFF!UpdateReference))
+	to
+		t:diffExtended!UpdateReference(
+		rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			leftTarget <- s.leftTarget,
+			reference <- s.reference,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule UpdateUniqueReferenceValue {
+	from
+		s:DIFF!UpdateUniqueReferenceValue(s.oclIsTypeOf(DIFF!UpdateUniqueReferenceValue))
+	to
+		t:diffExtended!UpdateUniqueReferenceValue(
+			leftTarget <- s.leftTarget,
+			rightTarget <- s.rightTarget,
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			leftTarget <- s.leftTarget,
+			reference <- s.reference,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}
+
+rule RemoteUpdateUniqueReferenceValue {
+	from
+		s:DIFF!RemoteUpdateUniqueReferenceValue(s.oclIsTypeOf(DIFF!RemoteUpdateUniqueReferenceValue))
+	to
+		t:diffExtended!RemoteUpdateUniqueReferenceValue(
+			leftTarget <- s.leftTarget,
+			rightTarget <- s.rightTarget,
+			rightElement <- s.rightElement,
+			leftElement <- s.leftElement,
+			leftTarget <- s.leftTarget,
+			reference <- s.reference,
+			subDiffElements <- s.subDiffElements,
+			isHiddenBy <- s.isHiddenBy
+			
+		)
+}

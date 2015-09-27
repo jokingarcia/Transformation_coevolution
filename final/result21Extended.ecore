@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xmi:XMI xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:diff="http://www.eclipse.org/emf/compare/diff/1.1">
+  <diff:DiffModel left="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore"
+      right="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore">
+    <complexChanges changeType="Extract_superclass">
+      <atomicChanges xsi:type="diff:AddReferenceValue">
+        <reference href="http://www.eclipse.org/emf/2002/Ecore#//EClass/eSuperTypes"/>
+        <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoice"/>
+        <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoice"/>
+        <rightAddedTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//Multiple"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diff:AddReferenceValue">
+        <reference href="http://www.eclipse.org/emf/2002/Ecore#//EClass/eSuperTypes"/>
+        <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoiceController"/>
+        <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoiceController"/>
+        <rightAddedTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//Multiple"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diff:AddReferenceValue">
+        <reference href="http://www.eclipse.org/emf/2002/Ecore#//EClass/eSuperTypes"/>
+        <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoiceView"/>
+        <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoiceView"/>
+        <rightAddedTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//Multiple"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diff:RemoveModelElement">
+        <rightParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoice"/>
+        <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoice/numberOfChoices"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diff:RemoveModelElement">
+        <rightParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoice"/>
+        <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoice/selectionWay"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diff:RemoveModelElement">
+        <rightParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoiceController"/>
+        <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoiceController/selectionWay"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diff:RemoveModelElement">
+        <rightParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoiceController"/>
+        <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoiceController/numberOfChoices"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diff:RemoveModelElement">
+        <rightParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoiceView"/>
+        <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoiceView/selectionWay"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diff:RemoveModelElement">
+        <rightParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoiceView"/>
+        <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoiceView/numberOfChoices"/>
+      </atomicChanges>
+      <atomicChanges xsi:type="diff:AddModelElement">
+        <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#/"/>
+        <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//Multiple"/>
+      </atomicChanges>
+    </complexChanges>
+  </diff:DiffModel>
+  <diff:AddModelElement>
+    <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoice"/>
+    <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoice/@eGenericSuperTypes.1"/>
+  </diff:AddModelElement>
+  <diff:AddModelElement>
+    <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoiceController"/>
+    <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoiceController/@eGenericSuperTypes.1"/>
+  </diff:AddModelElement>
+  <diff:AddModelElement>
+    <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol12.ecore#//MultipleChoiceView"/>
+    <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol13.ecore#//MultipleChoiceView/@eGenericSuperTypes.1"/>
+  </diff:AddModelElement>
+</xmi:XMI>

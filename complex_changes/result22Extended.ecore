@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xmi:XMI xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:diffExtended="http://www.eclipse.org/emf/compare/diffExtended/1.1">
+  <diffExtended:DiffModel left="platform:/resource/Examination_Assistant/metamodels/AssistantMVC.ecore"
+      right="platform:/resource/Examination_Assistant/metamodels/AssistantMVCEvol15.ecore"/>
+  <diffExtended:MoveModelElement>
+    <rightElement href="platform:/resource/Examination_Assistant/metamodels/AssistantMVCEvol15.ecore#//OpenView/question"/>
+    <leftElement href="platform:/resource/Examination_Assistant/metamodels/AssistantMVC.ecore#//ExamItem/question"/>
+    <leftTarget href="platform:/resource/Examination_Assistant/metamodels/AssistantMVC.ecore#//OpenView"/>
+    <rightTarget href="platform:/resource/Examination_Assistant/metamodels/AssistantMVCEvol15.ecore#//ExamItem"/>
+  </diffExtended:MoveModelElement>
+</xmi:XMI>

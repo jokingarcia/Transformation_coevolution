@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="StateMachines"
+    nsURI="http://gts.inf.um.es/test/statemachines" nsPrefix="statemachines">
+  <eClassifiers xsi:type="ecore:EClass" name="StateMachine">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="top" eType="#//State" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="transitions" eType="#//Transition"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Guard">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="expression" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="StateVertex">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="outgoing" upperBound="-1"
+        eType="#//Transition"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="incoming" upperBound="-1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Transition">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="guard" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="effect" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="trigger"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SynchState" eSuperTypes="#//StateVertex">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="bound" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="State" abstract="true" eSuperTypes="#//StateVertex">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="entry" eType="#//Procedure"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="exit" eType="#//Procedure"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="doActivity" eType="#//Procedure"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="deferrableEvent" upperBound="-1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Procedure"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Pseudostate" eSuperTypes="#//StateVertex">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="ind" eType="#//PseudoStateKind"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SubState" eSuperTypes="#//StateVertex">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="referenceState" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Event"/>
+  <eClassifiers xsi:type="ecore:EClass" name="CompositeState" eSuperTypes="#//State">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="subvertex" upperBound="-1"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SimpleState" eSuperTypes="#//State"/>
+  <eClassifiers xsi:type="ecore:EClass" name="FinalState" eSuperTypes="#//State"/>
+  <eClassifiers xsi:type="ecore:EClass" name="SubmachineState" eSuperTypes="#//CompositeState">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="submachine" lowerBound="1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="PseudoStateKind">
+    <eLiterals name="initial"/>
+    <eLiterals name="deepHistory" value="1"/>
+    <eLiterals name="shallowHistory" value="2"/>
+    <eLiterals name="join" value="3"/>
+    <eLiterals name="fork" value="4"/>
+    <eLiterals name="junction" value="5"/>
+    <eLiterals name="choice" value="6"/>
+    <eLiterals name="entryPoint" value="7"/>
+    <eLiterals name="exitPoint" value="8"/>
+    <eLiterals name="terminate" value="9"/>
+  </eClassifiers>
+</ecore:EPackage>

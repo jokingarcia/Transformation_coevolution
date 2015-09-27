@@ -1,0 +1,50 @@
+module exam2mvc;
+create OUT : AssistantMVC from IN : ExamXML;
+
+rule Exams {
+  from
+    xml : ExamXML!Exam
+  to
+    mvc : AssistantMVC!Exam (
+      examItems <- xml.elements
+    )
+}
+
+rule ExamElement {
+  from
+    xml : ExamXML!ExamElement
+    (
+      xml.oclIsTypeOf(ExamXML!OpenElement).openAttribute = true
+    )
+  to
+    view : AssistantMVC!OpenView (
+      optional <- xml.optional
+    )
+}
+
+--MERGED RULE
+rule OpenElement_MultipleChoiceElement {
+  from
+    xml : ExamXML!OpenElement_MultipleChoiceElement
+  to
+    controller : AssistantMVC!OpenController,
+    view : AssistantMVC!OpenView (
+      controller <- controller,
+      fontName <- 'Times',
+      fontColor <- 'Red'
+    ),
+    model : AssistantMVC!Open (
+      question <- xml.question,
+      observers <- view
+    ),
+    controller_2 : AssistantMVC!MultipleChoiceController,
+    view_2 : AssistantMVC!MultipleChoiceView (
+      controller <- controller_2,
+      fontName <- 'Times',
+      fontColor <- 'Red'
+    ),
+    model_2 : AssistantMVC!MultipleChoice (
+      question <- xml.question,
+      observers <- view_2
+    )
+}

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Difference:DiffModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Difference="http://www.eclipse.org/Difference">
+  <ownedElements xsi:type="Difference:MoveModelElement">
+  		<rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol8.ecore#//Observable/question"/>
+  		<leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol10.ecore#//Exam/question"/>
+  		<leftTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol10.ecore#//Observable"/>
+  		<rightTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol8.ecore#//Exam"/>
+     	
+  </ownedElements>
+  <ownedElements xsi:type="Difference:ModelElementChangeLeftTarget">
+  		<rightParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol8.ecore#//ExamItem"/>
+     	<leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol10.ecore#//ExamItem/question"/>
+  </ownedElements>
+  
+</Difference:DiffModel>

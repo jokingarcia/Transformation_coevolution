@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<diffExtended:DiffModel xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:diffExtended="http://www.eclipse.org/emf/compare/diffExtended/1.1" left="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore"
+    right="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol14.ecore">
+  <complexChanges changeType="Pull_metaproperty">
+    <atomicChanges xsi:type="diffExtended:MoveModelElement">
+      <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol14.ecore#//Observable/question"/>
+      <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//ExamItem/question"/>
+      <leftTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//Observable"/>
+      <rightTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol14.ecore#//ExamItem"/>
+    </atomicChanges>
+  </complexChanges>
+</diffExtended:DiffModel>

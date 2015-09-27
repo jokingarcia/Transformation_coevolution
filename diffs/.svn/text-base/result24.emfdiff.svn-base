@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="Cp1252"?>
+<diff:ModelInputSnapshot xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:diff="http://www.eclipse.org/emf/compare/diff/1.1" xmlns:match="http://www.eclipse.org/emf/compare/match/1.1" date="2012-02-08T23:46:24.484+0100">
+  <diff left="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore" right="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol17.ecore">
+    <ownedElements xsi:type="diff:DiffGroup">
+      <subDiffElements xsi:type="diff:DiffGroup">
+        <subDiffElements xsi:type="diff:DiffGroup">
+          <subDiffElements xsi:type="diff:AddReferenceValue">
+            <reference href="http://www.eclipse.org/emf/2002/Ecore#//EClass/eSuperTypes"/>
+            <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol17.ecore#//MultipleChoice"/>
+            <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//MultipleChoice"/>
+            <rightAddedTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol17.ecore#//Observable"/>
+            <leftAddedTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//Observable"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:RemoveReferenceValue">
+            <reference href="http://www.eclipse.org/emf/2002/Ecore#//EClass/eSuperTypes"/>
+            <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol17.ecore#//MultipleChoice"/>
+            <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//MultipleChoice"/>
+            <leftRemovedTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//ExamItem"/>
+            <rightRemovedTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol17.ecore#//ExamItem"/>
+          </subDiffElements>
+          <subDiffElements xsi:type="diff:DiffGroup">
+            <subDiffElements xsi:type="diff:UpdateUniqueReferenceValue">
+              <reference href="http://www.eclipse.org/emf/2002/Ecore#//EGenericType/eClassifier"/>
+              <rightElement href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol17.ecore#//MultipleChoice/@eGenericSuperTypes.0"/>
+              <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//MultipleChoice/@eGenericSuperTypes.0"/>
+              <leftTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//Observable"/>
+              <rightTarget href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol17.ecore#//ExamItem"/>
+            </subDiffElements>
+            <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//MultipleChoice/@eGenericSuperTypes.0"/>
+          </subDiffElements>
+          <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//MultipleChoice"/>
+        </subDiffElements>
+        <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#/"/>
+      </subDiffElements>
+    </ownedElements>
+  </diff>
+  
+</diff:ModelInputSnapshot>

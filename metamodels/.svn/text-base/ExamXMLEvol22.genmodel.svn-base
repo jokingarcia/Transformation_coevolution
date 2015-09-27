@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/Examination_Assistant/src"
+    modelPluginID="Examination_Assistant" modelName="ExamXMLEvol22" importerID="org.eclipse.emf.importer.ecore"
+    complianceLevel="6.0" copyrightFields="false">
+  <foreignModel>ExamXMLEvol22.ecore</foreignModel>
+  <genPackages prefix="ExamXML" disposableProviderFactory="true" ecorePackage="ExamXMLEvol22.ecore#/">
+    <genClasses ecoreClass="ExamXMLEvol22.ecore#//Exam">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference ExamXMLEvol22.ecore#//Exam/elements"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="ExamXMLEvol22.ecore#//ExamElement">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ExamXMLEvol22.ecore#//ExamElement/value"/>
+    </genClasses>
+    <genClasses ecoreClass="ExamXMLEvol22.ecore#//OpenElement"/>
+    <genClasses ecoreClass="ExamXMLEvol22.ecore#//MultipleChoiceElement"/>
+    <genClasses ecoreClass="ExamXMLEvol22.ecore#//Evaluation">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ExamXMLEvol22.ecore#//Evaluation/question"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference ExamXMLEvol22.ecore#//Evaluation/exam"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xmi:XMI xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:diff="http://www.eclipse.org/emf/compare/diff/1.1">
+  <diff:DiffModel left="platform:/resource/examination-assistant/metamodels/ExamXML.ecore"
+      right="platform:/resource/examination-assistant/metamodels/ExamXMLEvol11.ecore">
+    <complexChanges changeType="Push_metaproperty"/>
+  </diff:DiffModel>
+  <diff:UpdateAttribute>
+    <attribute href="http://www.eclipse.org/emf/2002/Ecore#//EClass/abstract"/>
+    <leftElement href="platform:/resource/examination-assistant/metamodels/ExamXML.ecore#//OpenElement"/>
+    <rightElement href="platform:/resource/examination-assistant/metamodels/ExamXMLEvol11.ecore#//OpenElement"/>
+  </diff:UpdateAttribute>
+</xmi:XMI>

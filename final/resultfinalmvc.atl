@@ -1,0 +1,39 @@
+module exam2mvc;
+create OUT : AssistantMVC from IN : ExamXML;
+
+rule Exams {
+  from
+    xml : ExamXML!Exam
+  to
+    mvc : AssistantMVC!Exam (
+      examItems <- xml.elements
+    )
+}
+
+rule OpenQuestion {
+  from
+    xml : ExamXML!OpenElement
+  to
+    view : AssistantMVC!OpenView (
+      name <- 'Times',
+      color <- 'Red'
+    ),
+    model : AssistantMVC!Open (
+      observers <- view,
+      question <- xml.question
+    )
+}
+
+rule MultipleChoice {
+  from
+    xml : ExamXML!MultipleChoiceElement
+  to
+    view : AssistantMVC!MultipleChoiceView (
+      name <- 'Times',
+      color <- 'Red'
+    ),
+    model : AssistantMVC!MultipleChoice (
+      observers <- view,
+      question <- xml.question
+    )
+}

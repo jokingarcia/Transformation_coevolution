@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="Cp1252"?>
+<diff:ModelInputSnapshot xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:diff="http://www.eclipse.org/emf/compare/diff/1.1" xmlns:match="http://www.eclipse.org/emf/compare/match/1.1" date="2010-05-20T18:14:28.218+0200">
+  <diff left="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore" right="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol3.ecore">
+    <ownedElements xsi:type="diff:DiffGroup">
+      <subDiffElements xsi:type="diff:DiffGroup">
+        <subDiffElements xsi:type="diff:RemoveModelElement">
+          <rightParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol3.ecore#/"/>
+          <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//OpenView"/>
+        </subDiffElements>
+        <subDiffElements xsi:type="diff:RemoveModelElement">
+          <rightParent href="platform:/resource/examination-assistant/metamodels/AssistantMVCEvol3.ecore#/"/>
+          <leftElement href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#//MultipleChoiceView"/>
+        </subDiffElements>
+        <leftParent href="platform:/resource/examination-assistant/metamodels/AssistantMVC.ecore#/"/>
+      </subDiffElements>
+    </ownedElements>
+  </diff>
+ 
+</diff:ModelInputSnapshot>
